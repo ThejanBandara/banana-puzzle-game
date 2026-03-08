@@ -1,4 +1,4 @@
-# **BANANA PUZZLE GAME **
+# BANANA PUZZLE GAME
 
 ---
 
