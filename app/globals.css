@@ -1,26 +1,96 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap");
+
 @import "tailwindcss";
 
+@theme {
+    --color-primary: #fddf49;
+    --color-background-light: #f8f8f5;
+    --color-background-dark: #23200f;
+
+    --color-wood-dark: #451a03;
+    --color-wood-medium: #78350f;
+    --color-wood-light: #92400e;
+
+    --color-leaf-dark: #166534;
+    --color-form-bg: #fcfbf8;
+    --color-shadow-yellow: #ca8a04;
+
+    --font-display: 'Space Grotesk', sans-serif;
+
+    --animate-fade-in-up: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    --animate-float: float 10s ease-in-out infinite;
+
+    @keyframes fade-in-up {
+        0% {
+            opacity: 0;
+            transform: translateY(40px) scale(0.95);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes float {
+        0% {
+            transform: translateY(0) translateX(0) scale(0.8);
+            opacity: 0;
+        }
+
+        20% {
+            opacity: 0.8;
+        }
+
+        80% {
+            opacity: 0.8;
+        }
+
+        100% {
+            transform: translateY(-150px) translateX(20px) scale(1.2);
+            opacity: 0;
+        }
+    }
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+    --font-space: 'Space Grotesk';
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer utilities {
+    .bamboo-shadow {
+        box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06), 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+    }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+    .wooden-texture {
+        background-image: linear-gradient(to bottom, var(--color-wood-medium), var(--color-wood-light));
+        border: 6px solid var(--color-wood-dark);
+    }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+    .vines {
+        background: linear-gradient(90deg,
+                transparent 45%,
+                var(--color-leaf-dark) 45%,
+                var(--color-leaf-dark) 55%,
+                transparent 55%);
+        background-size: 20px 100%;
+    }
+
+    .text-3d {
+        text-shadow:
+            0 1px 0 #ccc,
+            0 2px 0 #c9c9c9,
+            0 3px 0 #bbb,
+            0 4px 0 #b9b9b9,
+            0 5px 0 #aaa,
+            0 6px 1px rgba(0, 0, 0, 0.1),
+            0 0 5px rgba(0, 0, 0, 0.1),
+            0 1px 3px rgba(0, 0, 0, 0.3),
+            0 3px 5px rgba(0, 0, 0, 0.2),
+            0 5px 10px rgba(0, 0, 0, 0.25),
+            0 10px 10px rgba(0, 0, 0, 0.2),
+            0 20px 20px rgba(0, 0, 0, 0.15);
+    }
 }
