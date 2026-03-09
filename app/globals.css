@@ -5,6 +5,7 @@
 @import "tailwindcss";
 
 @theme {
+    --font-display: var(--font-space-grotesk);
     --color-primary: #fddf49;
     --color-background-light: #f8f8f5;
     --color-background-dark: #23200f;
