@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import JungleParticles from "@/components/jungle-particles";
 import {
@@ -16,6 +16,18 @@ import {
   ChevronLeft
 } from "lucide-react";
 import GamePlay from '@/components/game-play';
+import { useAuth } from '@/context/auth-context';
+import { LogOut, Loader2 } from 'lucide-react';
+import { db } from '@/lib/firebase';
+import { 
+  collection, 
+  query, 
+  orderBy, 
+  limit, 
+  onSnapshot,
+  doc,
+  getDoc
+} from 'firebase/firestore';
 
 const GAME_MODES = [
   {
@@ -61,8 +73,56 @@ const GAME_MODES = [
 ];
 
 export default function MissionHub() {
+  const { user, logout } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [playingMode, setPlayingMode] = useState<typeof GAME_MODES[0] | null>(null);
+  
+  // Real-time stats and leaderboard
+  const [userStats, setUserStats] = useState({ totalBananas: 0, puzzlesSolved: 0 });
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [loadingStats, setLoadingStats] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+
+    // 1. Fetch User Stats
+    const userRef = doc(db, "users", user.uid);
+    const unsubUser = onSnapshot(userRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        setUserStats({
+          totalBananas: data.stats?.totalBananas || 0,
+          puzzlesSolved: data.stats?.puzzlesSolved || 0
+        });
+      }
+      setLoadingStats(false);
+    });
+
+    // 2. Fetch Leaderboard (Top 3)
+    const q = query(
+      collection(db, "users"),
+      orderBy("stats.totalBananas", "desc"),
+      limit(3)
+    );
+    const unsubLeaderboard = onSnapshot(q, (snapshot) => {
+      const users: any[] = [];
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        users.push({
+          id: doc.id,
+          name: data.displayName || "Unknown Explorer",
+          bananas: data.stats?.totalBananas || 0,
+          img: data.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${doc.id}`
+        });
+      });
+      setLeaderboard(users);
+    });
+
+    return () => {
+      unsubUser();
+      unsubLeaderboard();
+    };
+  }, [user]);
 
   const nextMode = () => {
     setCurrentIndex((prev) => (prev + 1) % GAME_MODES.length);
@@ -118,24 +178,31 @@ export default function MissionHub() {
 
           <div className="flex items-center gap-4 md:gap-8">
             <div className="hidden md:flex items-center gap-4 bg-wood-dark/5 dark:bg-primary/5 px-4 py-2 rounded-2xl border-2 border-wood-dark/10 dark:border-primary/10">
-              <div className="flex items-center gap-2 group cursor-help" title="Daily Streak">
+              <div className="flex items-center gap-2 group cursor-help" title="Puzzles Solved">
                 <Flame className="size-5 text-orange-500 fill-orange-500 animate-pulse" />
-                <span className="font-black text-sm text-wood-dark dark:text-primary">5 DAY STREAK</span>
+                <span className="font-black text-sm text-wood-dark dark:text-primary uppercase">{userStats.puzzlesSolved} SOLVED</span>
               </div>
               <div className="h-6 w-0.5 bg-wood-dark/20 dark:bg-primary/20"></div>
               <div className="flex items-center gap-2 group cursor-help" title="Total Bananas">
                 <img src="/banana.svg" alt="Banana" className="size-5 drop-shadow-sm" />
-                <span className="font-black text-sm text-wood-dark dark:text-primary">12 BANANAS</span>
+                <span className="font-black text-sm text-wood-dark dark:text-primary uppercase">{userStats.totalBananas} BANANAS</span>
               </div>
             </div>
 
             <div className="flex items-center gap-3 pl-4 border-l-2 border-wood-dark/10 dark:border-primary/10">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-black text-wood-dark dark:text-white uppercase tracking-tight">Golden Gorilla</p>
-                <p className="text-xs font-bold text-leaf-dark dark:text-primary/70">Level 42 Explorer</p>
+                <p className="text-sm font-black text-wood-dark dark:text-white uppercase tracking-tight">{user?.displayName || "Golden Gorilla"}</p>
+                <p className="text-xs font-bold text-leaf-dark dark:text-primary/70">Level {Math.floor(userStats.puzzlesSolved / 5) + 1} Explorer</p>
               </div>
-              <div className="size-12 rounded-2xl border-4 border-wood-dark shadow-xl overflow-hidden bg-primary rotate-3 transform hover:rotate-0 transition-transform duration-300 cursor-pointer">
-                <img src="https://images.unsplash.com/photo-1540573133985-87bd1709da65?auto=format&fit=crop&q=80&w=100" alt="Avatar" className="w-full h-full object-cover" />
+              <div className="size-12 rounded-2xl border-4 border-wood-dark shadow-xl overflow-hidden bg-primary rotate-3 transform hover:rotate-0 transition-transform duration-300 cursor-pointer group relative">
+                <img src={user?.photoURL || "https://images.unsplash.com/photo-1540573133985-87bd1709da65?auto=format&fit=crop&q=80&w=100"} alt="Avatar" className="w-full h-full object-cover" />
+                <button 
+                  onClick={logout}
+                  className="absolute inset-0 bg-red-600/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Sign Out"
+                >
+                  <LogOut className="text-white size-6" />
+                </button>
               </div>
             </div>
           </div>
@@ -170,28 +237,29 @@ export default function MissionHub() {
                 Top Explorers
               </h3>
               <div className="flex flex-col gap-4">
-                {[
-                  { name: 'Zimba', time: '2:45 min', rank: 1, color: 'text-yellow-400', img: 'https://images.unsplash.com/photo-1540573133985-87bd1709da65?auto=format&fit=crop&q=80&w=100' },
-                  { name: 'Kala', time: '3:12 min', rank: 2, color: 'text-slate-300', img: 'https://images.unsplash.com/photo-1544256718-3bcf237f3974?auto=format&fit=crop&q=80&w=100' },
-                  { name: 'Tarzan', time: '3:45 min', rank: 3, color: 'text-amber-600', img: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&q=80&w=100' }
-                ].map((user) => (
-                  <div key={user.rank} className="flex items-center justify-between group transition-all hover:translate-x-1">
+                {leaderboard.length > 0 ? leaderboard.map((player, idx) => (
+                  <div key={player.id} className="flex items-center justify-between group transition-all hover:translate-x-1">
                     <div className="flex items-center gap-3">
                       <div className={`size-10 rounded-xl border-2 border-wood-dark/20 overflow-hidden`}>
-                        <img src={user.img} alt={user.name} className="w-full h-full object-cover" />
+                        <img src={player.img} alt={player.name} className="w-full h-full object-cover" />
                       </div>
                       <div>
-                        <p className="text-sm font-black text-wood-dark dark:text-white">{user.name}</p>
-                        <p className="text-[10px] font-bold text-leaf-dark uppercase">{user.time}</p>
+                        <p className="text-sm font-black text-wood-dark dark:text-white truncate max-w-[120px]">{player.name}</p>
+                        <p className="text-[10px] font-bold text-leaf-dark uppercase">{player.bananas} Bananas</p>
                       </div>
                     </div>
-                    {user.rank === 1 ? (
+                    {idx === 0 ? (
                       <span className="material-symbols-outlined text-yellow-500 fill-1">workspace_premium</span>
                     ) : (
-                      <span className={`text-xs font-black ${user.color}`}>#{user.rank}</span>
+                      <span className={`text-xs font-black ${idx === 1 ? 'text-slate-300' : 'text-amber-600'}`}>#{idx + 1}</span>
                     )}
                   </div>
-                ))}
+                )) : (
+                  <div className="py-4 text-center">
+                    <Loader2 className="animate-spin size-6 text-primary mx-auto mb-2" />
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Searching the Canopy...</p>
+                  </div>
+                )}
               </div>
             </div>
           </aside>

@@ -8,8 +8,18 @@ import {
   Flame, 
   ChevronRight,
   Heart,
-  Timer
+  Timer,
+  Loader2
 } from 'lucide-react';
+import { db, auth } from '@/lib/firebase';
+import { 
+  collection, 
+  addDoc, 
+  doc, 
+  updateDoc, 
+  increment,
+  serverTimestamp 
+} from 'firebase/firestore';
 
 interface GamePlayProps {
   mode: {
@@ -45,13 +55,12 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
     setLoading(true);
     setFeedback(null);
     try {
-      const res = await fetch('https://marcconrad.com/uob/banana/api.php');
-      const data = await res.json();
+      const response = await fetch("/api/puzzle");
+      if (!response.ok) throw new Error("Jungle spirits are uncooperative");
+      const data = await response.json();
       setPuzzle(data);
-      setError(false);
     } catch (err) {
       console.error("Failed to fetch puzzle:", err);
-      setError(true);
     } finally {
       setLoading(false);
     }
@@ -61,17 +70,50 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
     fetchPuzzle();
   }, [fetchPuzzle]);
 
+  const saveMatchResult = async (finalBananas: number, finalCorrect: number) => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    try {
+      // 1. Save match record
+      await addDoc(collection(db, "matches"), {
+        uid: user.uid,
+        mode: mode.id,
+        score: finalCorrect * 100,
+        accuracy: (finalCorrect / TOTAL_PUZZLES) * 100,
+        bananasEarned: finalBananas,
+        timestamp: serverTimestamp()
+      });
+
+      // 2. Update user stats
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, {
+        "stats.totalBananas": increment(finalBananas),
+        "stats.puzzlesSolved": increment(finalCorrect),
+      });
+
+      console.log("Jungle progress saved to the Great Totem!");
+    } catch (err) {
+      console.error("Failed to save to the Great Totem:", err);
+    }
+  };
+
   const handleAnswer = (answer: number) => {
     if (!puzzle || feedback || isFinished) return;
 
     const isCorrect = answer === puzzle.solution;
     
+    let newBananas = bananasEarned;
+    let newCorrect = correctCount;
+
     if (isCorrect) {
       setFeedback('correct');
       setScore(prev => prev + 100);
       setStreak(prev => prev + 1);
-      setBananasEarned(prev => prev + 5);
-      setCorrectCount(prev => prev + 1);
+      newBananas += 5;
+      newCorrect += 1;
+      setBananasEarned(newBananas);
+      setCorrectCount(newCorrect);
     } else {
       setFeedback('incorrect');
       setStreak(0);
@@ -84,6 +126,7 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
         fetchPuzzle();
       } else {
         setIsFinished(true);
+        saveMatchResult(newBananas, newCorrect);
       }
     }, 1500);
   };
