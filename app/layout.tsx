@@ -13,6 +13,8 @@ export const metadata: Metadata = {
   description: "Embark on a tropical adventure!",
 };
 
+import { AuthProvider } from "@/context/auth-context";
+
 export default function RootLayout({ children, }: Readonly<{ children: React.ReactNode; }>) {
   return (
     <html lang="en">
@@ -23,7 +25,9 @@ export default function RootLayout({ children, }: Readonly<{ children: React.Rea
       <body
         className={`${spaceGrotesk.variable} font-display antialiased w-full min-h-screen overflow-x-hidden`}
       >
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
