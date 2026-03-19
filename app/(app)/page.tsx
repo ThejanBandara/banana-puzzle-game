@@ -15,6 +15,7 @@ import {
   Map as MapIcon,
   ChevronLeft
 } from "lucide-react";
+import GamePlay from '@/components/game-play';
 
 const GAME_MODES = [
   {
@@ -24,7 +25,8 @@ const GAME_MODES = [
     reward: '50 BANANAS',
     icon: 'inventory_2',
     status: 'Temple Unlocked',
-    description: 'An ancient temple filled with traps and golden rewards.'
+    description: 'An ancient temple filled with traps and golden rewards.',
+    isAvailable: true
   },
   {
     id: 'river',
@@ -33,7 +35,8 @@ const GAME_MODES = [
     reward: '30 BANANAS',
     icon: 'water_drop',
     status: 'Level 15 Required',
-    description: 'Race through the dangerous rapids and avoid the piranhas.'
+    description: 'Race through the dangerous rapids and avoid the piranhas.',
+    isAvailable: false
   },
   {
     id: 'cave',
@@ -42,7 +45,8 @@ const GAME_MODES = [
     reward: '100 BANANAS',
     icon: 'landscape',
     status: 'Boss Key Needed',
-    description: 'A dark, mysterious cave where sound is your only guide.'
+    description: 'A dark, mysterious cave where sound is your only guide.',
+    isAvailable: false
   },
   {
     id: 'canopy',
@@ -51,12 +55,14 @@ const GAME_MODES = [
     reward: '20 BANANAS',
     icon: 'airplanemode_active',
     status: 'Free Play',
-    description: 'Soar through the treetops and collect floating fruits.'
+    description: 'Soar through the treetops and collect floating fruits.',
+    isAvailable: false
   }
 ];
 
 export default function MissionHub() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [playingMode, setPlayingMode] = useState<typeof GAME_MODES[0] | null>(null);
 
   const nextMode = () => {
     setCurrentIndex((prev) => (prev + 1) % GAME_MODES.length);
@@ -68,6 +74,14 @@ export default function MissionHub() {
 
   return (
     <div className="bg-background-light dark:bg-background-dark font-display min-h-screen w-full relative overflow-x-hidden flex flex-col text-slate-900 dark:text-slate-100">
+      
+      {/* 0. GAME OVERLAY */}
+      {playingMode && (
+        <GamePlay 
+          mode={playingMode} 
+          onClose={() => setPlayingMode(null)} 
+        />
+      )}
 
       {/* 1. LAYERED BACKGROUND */}
       <div className="fixed inset-0 z-0">
@@ -217,7 +231,7 @@ export default function MissionHub() {
                   const scale = isActive ? 1 : 0.7;
                   const opacity = Math.max(0, 1 - absOffset * 0.6); // Linear fade
                   const blur = isActive ? 0 : 4 * absOffset;
-                  const grayscale = isActive ? 0 : 100;
+                  const grayscale = (isActive && !mode.isAvailable) || !isActive ? 100 : 0;
                   const zIndex = Math.round(20 - absOffset * 10);
 
                   return (
@@ -231,29 +245,57 @@ export default function MissionHub() {
                         zIndex: zIndex,
                         pointerEvents: isActive ? 'auto' : (isVisible ? 'auto' : 'none')
                       }}
-                      onClick={() => !isActive && setCurrentIndex(index)}
+                      onClick={() => {
+                        if (isActive && mode.isAvailable) {
+                          setPlayingMode(mode);
+                        } else if (!isActive) {
+                          setCurrentIndex(index);
+                        }
+                      }}
                     >
                       <div className={`relative group flex flex-col items-center ${isActive ? 'w-80 h-80 md:w-[400px] md:h-[400px]' : 'w-64 h-64 md:w-80 md:h-80'}`}>
-                        {isActive && (
+                        {isActive && mode.isAvailable && (
                           <div className="absolute inset-0 bg-primary/20 rounded-full blur-[120px] animate-pulse scale-125"></div>
                         )}
 
-                        <button className={`relative w-full h-full wooden-texture rounded-[3.5rem] shadow-[0_40px_80px_rgba(0,0,0,0.7)] flex flex-col items-center justify-center p-8 md:p-12 border-t-12 border-b-12 border-wood-dark transform transition-all duration-700 ${isActive ? 'hover:scale-105 hover:rotate-1' : ''}`}>
+                        <button 
+                          disabled={!mode.isAvailable}
+                          onClick={(e) => {
+                            if (isActive && mode.isAvailable) {
+                              e.stopPropagation();
+                              setPlayingMode(mode);
+                            }
+                          }}
+                          className={`relative w-full h-full wooden-texture rounded-[3.5rem] shadow-[0_40px_80px_rgba(0,0,0,0.7)] flex flex-col items-center justify-center p-8 md:p-12 border-t-12 border-b-12 border-wood-dark transform transition-all duration-700 ${isActive && mode.isAvailable ? 'hover:scale-105 hover:rotate-1' : ''} ${!mode.isAvailable ? 'cursor-not-allowed opacity-80' : ''}`}
+                        >
                           <div className="absolute top-0 left-0 w-full h-full bg-linear-to-br from-white/10 to-transparent pointer-events-none rounded-[3.5rem]"></div>
 
-                          <span className={`material-symbols-outlined transition-all duration-700 ${isActive ? 'text-[12rem] md:text-[18rem]' : 'text-[8rem] md:text-[12rem]'} text-primary drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)] leading-none ${isActive ? 'group-hover:rotate-3' : ''}`}>
-                            {mode.icon}
+                          <span className={`material-symbols-outlined transition-all duration-700 ${isActive ? 'text-[12rem] md:text-[18rem]' : 'text-[8rem] md:text-[12rem]'} ${mode.isAvailable ? 'text-primary' : 'text-slate-400'} drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)] leading-none ${isActive && mode.isAvailable ? 'group-hover:rotate-3' : ''}`}>
+                            {mode.isAvailable ? mode.icon : 'lock'}
                           </span>
 
                           {isActive ? (
                             <div className="flex flex-col items-center mt-2">
-                              <span className="text-4xl md:text-5xl font-black text-white uppercase italic tracking-tighter text-3d py-2">
-                                PLAY NOW
-                              </span>
-                              <div className="mt-4 flex items-center gap-2 px-6 py-2 bg-leaf-dark/30 rounded-full border-2 border-white/5 backdrop-blur-xl">
-                                <div className="size-2.5 rounded-full bg-primary animate-ping"></div>
-                                <span className="text-xs font-black text-primary tracking-[0.2em] uppercase">{mode.status}</span>
-                              </div>
+                              {mode.isAvailable ? (
+                                <>
+                                  <span className="text-4xl md:text-5xl font-black text-white uppercase italic tracking-tighter text-3d py-2">
+                                    PLAY NOW
+                                  </span>
+                                  <div className="mt-4 flex items-center gap-2 px-6 py-2 bg-leaf-dark/30 rounded-full border-2 border-white/5 backdrop-blur-xl">
+                                    <div className="size-2.5 rounded-full bg-primary animate-ping"></div>
+                                    <span className="text-xs font-black text-primary tracking-[0.2em] uppercase">{mode.status}</span>
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="bg-black/40 backdrop-blur-md px-6 py-3 rounded-2xl border-2 border-white/10 mb-4">
+                                    <p className="text-sm font-black text-white uppercase tracking-widest text-center">NOT AVAILABLE YET</p>
+                                  </div>
+                                  <button disabled className="bg-slate-700 text-slate-500 font-black px-10 py-3 rounded-full border-b-4 border-slate-900 cursor-not-allowed uppercase italic tracking-tighter shadow-lg grayscale">
+                                    LOCKED
+                                  </button>
+                                </>
+                              )}
                             </div>
                           ) : (
                             <div className="mt-4 text-center">
