@@ -53,12 +53,12 @@ const GAME_MODES = [
   {
     id: 'cave',
     title: 'Hidden Echo Cave',
-    difficulty: 'EXPERT',
-    reward: '100 BANANAS',
-    icon: 'landscape',
-    status: 'Boss Key Needed',
-    description: 'A dark, mysterious cave where sound is your only guide.',
-    isAvailable: false
+    difficulty: 'HARDCORE (3 LIVES)',
+    reward: '250 BANANAS',
+    icon: 'castle',
+    status: 'SURVIVAL MODE',
+    description: 'Survive for as long as possible. One wrong move costs a life!',
+    isAvailable: true
   },
   {
     id: 'canopy',

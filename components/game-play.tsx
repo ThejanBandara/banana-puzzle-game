@@ -49,8 +49,11 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
   const [isFinished, setIsFinished] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
   const [timeLeft, setTimeLeft] = useState(mode.id === 'river' ? 60 : 0);
+  const [lives, setLives] = useState(mode.id === 'cave' ? 3 : 0);
 
   const isSpeedMode = mode.id === 'river';
+  const isHardcoreMode = mode.id === 'cave';
+  const isZenMode = mode.id === 'canopy';
   const TOTAL_PUZZLES = 10;
 
   const fetchPuzzle = useCallback(async () => {
@@ -199,12 +202,23 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
                 {mode.title}
               </h2>
               <p className="text-[10px] md:text-xs font-bold text-primary tracking-[0.2em] uppercase mt-1">
-                {isSpeedMode ? 'Adrenaline Speed Mode' : 'Classic Progression Mode'}
+                {isSpeedMode ? 'Adrenaline Speed Mode' : isHardcoreMode ? 'Survival Hardcore Mode' : isZenMode ? 'Relaxed Zen Mode' : 'Classic Progression Mode'}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-4 md:gap-8">
+            {isHardcoreMode && (
+              <div className="flex items-center gap-1.5 bg-red-500/10 px-3 py-1.5 rounded-full border border-red-500/20">
+                {[...Array(3)].map((_, i) => (
+                  <Heart 
+                    key={i} 
+                    className={`size-5 transition-all duration-500 ${i < lives ? 'text-red-500 fill-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]' : 'text-white/10'}`} 
+                  />
+                ))}
+              </div>
+            )}
+
             <div className="flex flex-col items-end">
               <div className="flex items-center gap-2">
                 <Flame className={`size-5 ${streak > 0 ? 'text-orange-500 fill-orange-500 animate-bounce' : 'text-white/20'}`} />
