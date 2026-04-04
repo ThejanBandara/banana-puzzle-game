@@ -101,11 +101,12 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
 
     try {
       // 1. Save match record
+      const pointsPerPuzzle = isHardcoreMode ? 250 : 100;
       await addDoc(collection(db, "matches"), {
         uid: user.uid,
         mode: mode.id,
-        score: finalCorrect * 100,
-        accuracy: (finalCorrect / currentCount) * 100,
+        score: finalCorrect * pointsPerPuzzle,
+        accuracy: (finalCorrect / (currentCount || 1)) * 100,
         bananasEarned: finalBananas,
         timestamp: serverTimestamp()
       });
@@ -133,9 +134,14 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
 
     if (isCorrect) {
       setFeedback('correct');
-      setScore(prev => prev + 100);
+      
+      // Scaled Rewards
+      const pointsPerPuzzle = isHardcoreMode ? 250 : 100;
+      const bananasPerPuzzle = isHardcoreMode ? 15 : isSpeedMode ? 8 : 5;
+      
+      setScore(prev => prev + pointsPerPuzzle);
       setStreak(prev => prev + 1);
-      newBananas += 5;
+      newBananas += bananasPerPuzzle;
       newCorrect += 1;
       setBananasEarned(newBananas);
       setCorrectCount(newCorrect);
@@ -344,7 +350,7 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
                 <img 
                   src={puzzle?.question} 
                   alt="Banana Puzzle" 
-                  className="max-w-full max-h-[400px] md:max-h-[500px] rounded-2xl shadow-2xl border-4 border-white/10"
+                  className="max-w-full max-h-[400px] md:max-h-[500px] rounded-2xl shadow-2xl border-4 border-white/10 transition-all duration-700"
                 />
                 
                 {feedback === 'correct' && (
