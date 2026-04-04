@@ -48,7 +48,9 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
   const [currentCount, setCurrentCount] = useState(1);
   const [isFinished, setIsFinished] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(mode.id === 'river' ? 60 : 0);
 
+  const isSpeedMode = mode.id === 'river';
   const TOTAL_PUZZLES = 10;
 
   const fetchPuzzle = useCallback(async () => {
@@ -70,6 +72,26 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
     fetchPuzzle();
   }, [fetchPuzzle]);
 
+  // Timer Logic for Speed Mode
+  useEffect(() => {
+    if (!isSpeedMode || isFinished || loading) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setIsFinished(true);
+          // Trigger save results when timer ends
+          saveMatchResult(bananasEarned, correctCount);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isSpeedMode, isFinished, loading, bananasEarned, correctCount]);
+
   const saveMatchResult = async (finalBananas: number, finalCorrect: number) => {
     const user = auth.currentUser;
     if (!user) return;
@@ -80,7 +102,7 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
         uid: user.uid,
         mode: mode.id,
         score: finalCorrect * 100,
-        accuracy: (finalCorrect / TOTAL_PUZZLES) * 100,
+        accuracy: (finalCorrect / currentCount) * 100,
         bananasEarned: finalBananas,
         timestamp: serverTimestamp()
       });
@@ -121,14 +143,22 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
 
     // Auto-advance after a delay
     setTimeout(() => {
-      if (currentCount < TOTAL_PUZZLES) {
+      if (isSpeedMode) {
+        // Speed mode is infinite until time runs out
+        if (isCorrect) setTimeLeft(prev => prev + 2);
         setCurrentCount(prev => prev + 1);
         fetchPuzzle();
       } else {
-        setIsFinished(true);
-        saveMatchResult(newBananas, newCorrect);
+        // Classic mode ends at TOTAL_PUZZLES
+        if (currentCount < TOTAL_PUZZLES) {
+          setCurrentCount(prev => prev + 1);
+          fetchPuzzle();
+        } else {
+          setIsFinished(true);
+          saveMatchResult(newBananas, newCorrect);
+        }
       }
-    }, 1500);
+    }, 1200);
   };
 
   return (
@@ -169,7 +199,7 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
                 {mode.title}
               </h2>
               <p className="text-[10px] md:text-xs font-bold text-primary tracking-[0.2em] uppercase mt-1">
-                Classic Progression Mode
+                {isSpeedMode ? 'Adrenaline Speed Mode' : 'Classic Progression Mode'}
               </p>
             </div>
           </div>
@@ -185,11 +215,24 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
             
             <div className="h-10 w-0.5 bg-white/10"></div>
             
-            <div className="flex flex-col items-end">
+            <div className="flex flex-col items-end min-w-[100px]">
               <div className="flex items-center gap-2">
-                <span className="text-xl font-black text-white">{currentCount}<span className="text-primary/40">/{TOTAL_PUZZLES}</span></span>
+                {isSpeedMode ? (
+                  <>
+                    <Timer className={`size-5 ${timeLeft < 10 ? 'text-red-500 animate-pulse' : 'text-primary'}`} />
+                    <span className={`text-2xl font-black ${timeLeft < 10 ? 'text-red-500 underline' : 'text-white'}`}>
+                      {timeLeft}s
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-xl font-black text-white">
+                    {currentCount}<span className="text-primary/40">/{TOTAL_PUZZLES}</span>
+                  </span>
+                )}
               </div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Mission Progress</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
+                {isSpeedMode ? 'Time Left' : 'Mission Progress'}
+              </p>
             </div>
           </div>
         </div>
@@ -213,8 +256,12 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
                 
                 <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto mb-10">
                   <div className="bg-white/5 backdrop-blur-md p-4 rounded-3xl border border-white/10">
-                    <p className="text-xl font-black text-primary italic leading-none">{correctCount * 10}%</p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Accuracy</p>
+                    <p className="text-xl font-black text-primary italic leading-none">
+                      {isSpeedMode ? correctCount : `${(correctCount / TOTAL_PUZZLES) * 100}%`}
+                    </p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                      {isSpeedMode ? 'Puzzles Solved' : 'Accuracy'}
+                    </p>
                   </div>
                   <div className="bg-white/5 backdrop-blur-md p-4 rounded-3xl border border-white/10">
                     <p className="text-xl font-black text-primary italic leading-none">+{bananasEarned}</p>
@@ -235,8 +282,8 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
                         setCurrentCount(1);
                         setCorrectCount(0);
                         setBananasEarned(0);
-                        setScore(0);
                         setStreak(0);
+                        if (isSpeedMode) setTimeLeft(60);
                         fetchPuzzle();
                     }}
                     className="w-full sm:w-auto px-12 py-5 bg-white/10 hover:bg-white/20 text-white font-black rounded-3xl border-2 border-white/10 transition-all text-xl italic tracking-tighter"

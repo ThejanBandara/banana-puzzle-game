@@ -1,0 +1,7 @@
+- Version Controlling
+
+- Event Driven Architechture
+
+- Interoparability 
+
+- Virtual Identity
