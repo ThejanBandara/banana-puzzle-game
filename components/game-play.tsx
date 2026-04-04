@@ -142,10 +142,21 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
     } else {
       setFeedback('incorrect');
       setStreak(0);
+      if (isHardcoreMode) {
+        setLives(prev => prev - 1);
+      }
     }
 
     // Auto-advance after a delay
     setTimeout(() => {
+      // 1. Check for Game Over (Lives)
+      if (isHardcoreMode && lives <= 1 && !isCorrect) {
+        setIsFinished(true);
+        saveMatchResult(newBananas, newCorrect);
+        return;
+      }
+
+      // 2. Regular Advancement
       if (isSpeedMode) {
         // Speed mode is infinite until time runs out
         if (isCorrect) setTimeLeft(prev => prev + 2);
@@ -262,10 +273,16 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
               <div className="text-center animate-fade-in-up">
                 <div className="relative inline-block mb-8">
                   <div className="absolute inset-x-0 -bottom-2 h-4 bg-primary/20 blur-xl"></div>
-                  <Trophy className="size-32 text-primary mx-auto drop-shadow-[0_0_30px_rgba(253,223,73,0.4)]" />
+                  {isHardcoreMode && lives === 0 ? (
+                    <X className="size-32 text-red-500 mx-auto drop-shadow-[0_0_30px_rgba(239,68,68,0.4)]" />
+                  ) : (
+                    <Trophy className="size-32 text-primary mx-auto drop-shadow-[0_0_30px_rgba(253,223,73,0.4)]" />
+                  )}
                 </div>
                 
-                <h2 className="text-5xl font-black text-white italic tracking-tighter text-3d mb-2">MISSION COMPLETE!</h2>
+                <h2 className="text-5xl font-black text-white italic tracking-tighter text-3d mb-2">
+                  {isHardcoreMode && lives === 0 ? 'MISSION FAILED!' : 'MISSION COMPLETE!'}
+                </h2>
                 <div className="h-1.5 w-40 bg-linear-to-r from-transparent via-primary to-transparent mx-auto mb-8"></div>
                 
                 <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto mb-10">
@@ -298,6 +315,7 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
                         setBananasEarned(0);
                         setStreak(0);
                         if (isSpeedMode) setTimeLeft(60);
+                        if (isHardcoreMode) setLives(3);
                         fetchPuzzle();
                     }}
                     className="w-full sm:w-auto px-12 py-5 bg-white/10 hover:bg-white/20 text-white font-black rounded-3xl border-2 border-white/10 transition-all text-xl italic tracking-tighter"
