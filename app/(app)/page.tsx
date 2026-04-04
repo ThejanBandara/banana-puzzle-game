@@ -44,31 +44,31 @@ const GAME_MODES = [
     id: 'river',
     title: 'Amazon River Run',
     difficulty: 'MEDIUM',
-    reward: '30 BANANAS',
+    reward: 'VARIABLE',
     icon: 'water_drop',
-    status: 'Level 15 Required',
-    description: 'Race through the dangerous rapids and avoid the piranhas.',
-    isAvailable: false
+    status: 'Unlocked',
+    description: 'Race through the dangerous rapids. Speed is key!',
+    isAvailable: true
   },
   {
     id: 'cave',
     title: 'Hidden Echo Cave',
-    difficulty: 'EXPERT',
-    reward: '100 BANANAS',
-    icon: 'landscape',
-    status: 'Boss Key Needed',
-    description: 'A dark, mysterious cave where sound is your only guide.',
-    isAvailable: false
+    difficulty: 'HARDCORE (3 LIVES)',
+    reward: '250 BANANAS',
+    icon: 'castle',
+    status: 'SURVIVAL MODE',
+    description: 'Survive for as long as possible. One wrong move costs a life!',
+    isAvailable: true
   },
   {
     id: 'canopy',
     title: 'Canopy Glider',
     difficulty: 'EASY',
-    reward: '20 BANANAS',
+    reward: '2 BANANAS',
     icon: 'airplanemode_active',
-    status: 'Free Play',
-    description: 'Soar through the treetops and collect floating fruits.',
-    isAvailable: false
+    status: 'PRACTICE MODE',
+    description: 'A peaceful flight through the treetops. No pressure, just practice.',
+    isAvailable: true
   }
 ];
 
@@ -412,13 +412,10 @@ export default function MissionHub() {
           <div className="flex items-center gap-8 mb-4 md:mb-0">
             <div className="flex items-center gap-3">
               <div className="size-3 rounded-full bg-leaf-dark shadow-[0_0_10px_#166534] animate-pulse"></div>
-              <p className="text-xs font-black uppercase tracking-wider text-leaf-dark">
-                API STATUS: <span className="underline italic">BLOOMING</span>
-              </p>
+              
             </div>
             <div className="flex items-center gap-3 text-slate-500/60 font-bold uppercase tracking-widest text-[10px]">
               <Wifi className="size-3" />
-              <span>LATENCY: 24MS</span>
             </div>
           </div>
 
