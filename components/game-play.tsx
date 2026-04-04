@@ -136,8 +136,8 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
       setFeedback('correct');
       
       // Scaled Rewards
-      const pointsPerPuzzle = isHardcoreMode ? 250 : 100;
-      const bananasPerPuzzle = isHardcoreMode ? 15 : isSpeedMode ? 8 : 5;
+      const pointsPerPuzzle = isHardcoreMode ? 250 : isZenMode ? 50 : 100;
+      const bananasPerPuzzle = isHardcoreMode ? 15 : isSpeedMode ? 8 : isZenMode ? 2 : 5;
       
       setScore(prev => prev + pointsPerPuzzle);
       setStreak(prev => prev + 1);
@@ -163,9 +163,9 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
       }
 
       // 2. Regular Advancement
-      if (isSpeedMode) {
-        // Speed mode is infinite until time runs out
-        if (isCorrect) setTimeLeft(prev => prev + 2);
+      if (isSpeedMode || isZenMode) {
+        // Infinite progression
+        if (isCorrect && isSpeedMode) setTimeLeft(prev => prev + 2);
         setCurrentCount(prev => prev + 1);
         fetchPuzzle();
       } else {
@@ -248,11 +248,11 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
             
             <div className="flex flex-col items-end min-w-[100px]">
               <div className="flex items-center gap-2">
-                {isSpeedMode ? (
+                {isSpeedMode || isZenMode ? (
                   <>
-                    <Timer className={`size-5 ${timeLeft < 10 ? 'text-red-500 animate-pulse' : 'text-primary'}`} />
-                    <span className={`text-2xl font-black ${timeLeft < 10 ? 'text-red-500 underline' : 'text-white'}`}>
-                      {timeLeft}s
+                    {isSpeedMode && <Timer className={`size-5 ${timeLeft < 10 ? 'text-red-500 animate-pulse' : 'text-primary'}`} />}
+                    <span className={`text-2xl font-black ${isSpeedMode && timeLeft < 10 ? 'text-red-500 underline' : 'text-white'}`}>
+                      {isSpeedMode ? `${timeLeft}s` : currentCount}
                     </span>
                   </>
                 ) : (
@@ -262,7 +262,7 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
                 )}
               </div>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
-                {isSpeedMode ? 'Time Left' : 'Mission Progress'}
+                {isSpeedMode ? 'Time Left' : isZenMode ? 'Puzzles Solved' : 'Mission Progress'}
               </p>
             </div>
           </div>
@@ -294,10 +294,10 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
                 <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto mb-10">
                   <div className="bg-white/5 backdrop-blur-md p-4 rounded-3xl border border-white/10">
                     <p className="text-xl font-black text-primary italic leading-none">
-                      {isSpeedMode ? correctCount : `${(correctCount / TOTAL_PUZZLES) * 100}%`}
+                      {(isSpeedMode || isZenMode) ? correctCount : `${(correctCount / TOTAL_PUZZLES) * 100}%`}
                     </p>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
-                      {isSpeedMode ? 'Puzzles Solved' : 'Accuracy'}
+                      {(isSpeedMode || isZenMode) ? 'Puzzles Solved' : 'Accuracy'}
                     </p>
                   </div>
                   <div className="bg-white/5 backdrop-blur-md p-4 rounded-3xl border border-white/10">

@@ -64,11 +64,11 @@ const GAME_MODES = [
     id: 'canopy',
     title: 'Canopy Glider',
     difficulty: 'EASY',
-    reward: '20 BANANAS',
+    reward: '2 BANANAS',
     icon: 'airplanemode_active',
-    status: 'Free Play',
-    description: 'Soar through the treetops and collect floating fruits.',
-    isAvailable: false
+    status: 'PRACTICE MODE',
+    description: 'A peaceful flight through the treetops. No pressure, just practice.',
+    isAvailable: true
   }
 ];
 
