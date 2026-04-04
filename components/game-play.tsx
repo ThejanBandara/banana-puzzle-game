@@ -49,8 +49,11 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
   const [isFinished, setIsFinished] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
   const [timeLeft, setTimeLeft] = useState(mode.id === 'river' ? 60 : 0);
+  const [lives, setLives] = useState(mode.id === 'cave' ? 3 : 0);
 
   const isSpeedMode = mode.id === 'river';
+  const isHardcoreMode = mode.id === 'cave';
+  const isZenMode = mode.id === 'canopy';
   const TOTAL_PUZZLES = 10;
 
   const fetchPuzzle = useCallback(async () => {
@@ -98,11 +101,12 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
 
     try {
       // 1. Save match record
+      const pointsPerPuzzle = isHardcoreMode ? 250 : 100;
       await addDoc(collection(db, "matches"), {
         uid: user.uid,
         mode: mode.id,
-        score: finalCorrect * 100,
-        accuracy: (finalCorrect / currentCount) * 100,
+        score: finalCorrect * pointsPerPuzzle,
+        accuracy: (finalCorrect / (currentCount || 1)) * 100,
         bananasEarned: finalBananas,
         timestamp: serverTimestamp()
       });
@@ -130,19 +134,35 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
 
     if (isCorrect) {
       setFeedback('correct');
-      setScore(prev => prev + 100);
+      
+      // Scaled Rewards
+      const pointsPerPuzzle = isHardcoreMode ? 250 : 100;
+      const bananasPerPuzzle = isHardcoreMode ? 15 : isSpeedMode ? 8 : 5;
+      
+      setScore(prev => prev + pointsPerPuzzle);
       setStreak(prev => prev + 1);
-      newBananas += 5;
+      newBananas += bananasPerPuzzle;
       newCorrect += 1;
       setBananasEarned(newBananas);
       setCorrectCount(newCorrect);
     } else {
       setFeedback('incorrect');
       setStreak(0);
+      if (isHardcoreMode) {
+        setLives(prev => prev - 1);
+      }
     }
 
     // Auto-advance after a delay
     setTimeout(() => {
+      // 1. Check for Game Over (Lives)
+      if (isHardcoreMode && lives <= 1 && !isCorrect) {
+        setIsFinished(true);
+        saveMatchResult(newBananas, newCorrect);
+        return;
+      }
+
+      // 2. Regular Advancement
       if (isSpeedMode) {
         // Speed mode is infinite until time runs out
         if (isCorrect) setTimeLeft(prev => prev + 2);
@@ -199,12 +219,23 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
                 {mode.title}
               </h2>
               <p className="text-[10px] md:text-xs font-bold text-primary tracking-[0.2em] uppercase mt-1">
-                {isSpeedMode ? 'Adrenaline Speed Mode' : 'Classic Progression Mode'}
+                {isSpeedMode ? 'Adrenaline Speed Mode' : isHardcoreMode ? 'Survival Hardcore Mode' : isZenMode ? 'Relaxed Zen Mode' : 'Classic Progression Mode'}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-4 md:gap-8">
+            {isHardcoreMode && (
+              <div className="flex items-center gap-1.5 bg-red-500/10 px-3 py-1.5 rounded-full border border-red-500/20">
+                {[...Array(3)].map((_, i) => (
+                  <Heart 
+                    key={i} 
+                    className={`size-5 transition-all duration-500 ${i < lives ? 'text-red-500 fill-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]' : 'text-white/10'}`} 
+                  />
+                ))}
+              </div>
+            )}
+
             <div className="flex flex-col items-end">
               <div className="flex items-center gap-2">
                 <Flame className={`size-5 ${streak > 0 ? 'text-orange-500 fill-orange-500 animate-bounce' : 'text-white/20'}`} />
@@ -248,10 +279,16 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
               <div className="text-center animate-fade-in-up">
                 <div className="relative inline-block mb-8">
                   <div className="absolute inset-x-0 -bottom-2 h-4 bg-primary/20 blur-xl"></div>
-                  <Trophy className="size-32 text-primary mx-auto drop-shadow-[0_0_30px_rgba(253,223,73,0.4)]" />
+                  {isHardcoreMode && lives === 0 ? (
+                    <X className="size-32 text-red-500 mx-auto drop-shadow-[0_0_30px_rgba(239,68,68,0.4)]" />
+                  ) : (
+                    <Trophy className="size-32 text-primary mx-auto drop-shadow-[0_0_30px_rgba(253,223,73,0.4)]" />
+                  )}
                 </div>
                 
-                <h2 className="text-5xl font-black text-white italic tracking-tighter text-3d mb-2">MISSION COMPLETE!</h2>
+                <h2 className="text-5xl font-black text-white italic tracking-tighter text-3d mb-2">
+                  {isHardcoreMode && lives === 0 ? 'MISSION FAILED!' : 'MISSION COMPLETE!'}
+                </h2>
                 <div className="h-1.5 w-40 bg-linear-to-r from-transparent via-primary to-transparent mx-auto mb-8"></div>
                 
                 <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto mb-10">
@@ -284,6 +321,7 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
                         setBananasEarned(0);
                         setStreak(0);
                         if (isSpeedMode) setTimeLeft(60);
+                        if (isHardcoreMode) setLives(3);
                         fetchPuzzle();
                     }}
                     className="w-full sm:w-auto px-12 py-5 bg-white/10 hover:bg-white/20 text-white font-black rounded-3xl border-2 border-white/10 transition-all text-xl italic tracking-tighter"
@@ -312,7 +350,7 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
                 <img 
                   src={puzzle?.question} 
                   alt="Banana Puzzle" 
-                  className="max-w-full max-h-[400px] md:max-h-[500px] rounded-2xl shadow-2xl border-4 border-white/10"
+                  className="max-w-full max-h-[400px] md:max-h-[500px] rounded-2xl shadow-2xl border-4 border-white/10 transition-all duration-700"
                 />
                 
                 {feedback === 'correct' && (
