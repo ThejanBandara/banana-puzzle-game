@@ -44,11 +44,11 @@ const GAME_MODES = [
     id: 'river',
     title: 'Amazon River Run',
     difficulty: 'MEDIUM',
-    reward: '30 BANANAS',
+    reward: 'VARIABLE',
     icon: 'water_drop',
-    status: 'Level 15 Required',
-    description: 'Race through the dangerous rapids and avoid the piranhas.',
-    isAvailable: false
+    status: 'Unlocked',
+    description: 'Race through the dangerous rapids. Speed is key!',
+    isAvailable: true
   },
   {
     id: 'cave',
@@ -412,13 +412,10 @@ export default function MissionHub() {
           <div className="flex items-center gap-8 mb-4 md:mb-0">
             <div className="flex items-center gap-3">
               <div className="size-3 rounded-full bg-leaf-dark shadow-[0_0_10px_#166534] animate-pulse"></div>
-              <p className="text-xs font-black uppercase tracking-wider text-leaf-dark">
-                API STATUS: <span className="underline italic">BLOOMING</span>
-              </p>
+              
             </div>
             <div className="flex items-center gap-3 text-slate-500/60 font-bold uppercase tracking-widest text-[10px]">
               <Wifi className="size-3" />
-              <span>LATENCY: 24MS</span>
             </div>
           </div>
 
