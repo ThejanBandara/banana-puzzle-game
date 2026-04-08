@@ -14,7 +14,8 @@ import {
   Target,
   Clock,
   Zap,
-  LogOut
+  LogOut,
+  ShieldCheck
 } from "lucide-react";
 import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
@@ -76,6 +77,14 @@ export default function ProfilePage() {
   const explorerLevel = Math.floor(userStats.puzzlesSolved / 5) + 1;
   const progressToNext = (userStats.puzzlesSolved % 5) * 20;
 
+  const getExplorerTitle = (level: number) => {
+    if (level >= 20) return "Ancient Jungle Legend";
+    if (level >= 15) return "Great Ape Strategist";
+    if (level >= 10) return "Forest Guardian";
+    if (level >= 5) return "Jade Pathseeker";
+    return "Jungle Scout";
+  };
+
   return (
     <div className="bg-background-light dark:bg-background-dark font-display min-h-screen w-full relative overflow-x-hidden flex flex-col text-slate-900 dark:text-slate-100">
       
@@ -86,10 +95,18 @@ export default function ProfilePage() {
           src="https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?auto=format&fit=crop&q=80&w=2000"
           className="w-full h-full object-cover opacity-20 grayscale-[0.3]"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background-light/50 to-background-light dark:via-background-dark/50 dark:to-background-dark" />
+        <div className="absolute inset-0 bg-linear-to-b from-transparent via-background-light/50 to-background-light dark:via-background-dark/50 dark:to-background-dark" />
+        
+        {/* Floating Leaves Decoration */}
+        <div className="absolute top-0 right-0 p-10 opacity-30 pointer-events-none animate-pulse">
+          <svg width="200" height="200" viewBox="0 0 100 100" fill="currentColor" className="text-primary">
+            <path d="M50 10 C30 30 10 50 10 70 C10 90 30 90 50 70 C70 90 90 90 90 70 C90 50 70 30 50 10" />
+            <path d="M50 10 L50 70" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </div>
       </div>
 
-      <JungleParticles color="#22c55e" />
+      <JungleParticles />
 
       {/* 2. HEADER */}
       <header className="relative z-10 w-full px-6 py-6 lg:px-20 flex items-center justify-between border-b border-wood-dark/10 dark:border-white/5 backdrop-blur-md">
@@ -132,12 +149,17 @@ export default function ProfilePage() {
           </div>
 
           <div className="flex-1 text-center md:text-left">
-            <h2 className="text-4xl font-black text-wood-dark dark:text-white mb-1 uppercase tracking-tighter">{user?.displayName || "Golden Gorilla"}</h2>
-            <p className="text-primary font-bold uppercase tracking-widest text-sm mb-4">{user?.email}</p>
+            <div className="flex flex-wrap items-center gap-3 justify-center md:justify-start mb-1">
+              <h2 className="text-4xl font-black text-wood-dark dark:text-white uppercase tracking-tighter">{user?.displayName || "Golden Gorilla"}</h2>
+              <span className="bg-primary/20 text-primary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-primary/20">
+                {getExplorerTitle(explorerLevel)}
+              </span>
+            </div>
+            <p className="text-primary/70 font-bold uppercase tracking-widest text-sm mb-4">{user?.email}</p>
             
             <div className="w-full max-w-md bg-wood-dark/10 dark:bg-white/5 h-4 rounded-full overflow-hidden border border-wood-dark/5 dark:border-white/5">
               <div 
-                className="h-full bg-gradient-to-r from-primary to-emerald-400 transition-all duration-1000 shadow-[0_0_20px_rgba(34,197,94,0.4)]"
+                className="h-full bg-linear-to-r from-primary to-emerald-400 transition-all duration-1000 shadow-[0_0_20px_rgba(34,197,94,0.4)]"
                 style={{ width: `${progressToNext}%` }}
               />
             </div>
@@ -148,10 +170,36 @@ export default function ProfilePage() {
           </div>
         </section>
 
+        {/* ACHIEVEMENTS MINI-GRID */}
+        <section>
+          <h3 className="text-xs font-black text-slate-500 uppercase tracking-[0.3em] mb-4 text-center md:text-left">Explorer Badges</h3>
+          <div className="flex flex-wrap justify-center md:justify-start gap-4">
+            {[
+              { id: 'scout', icon: MapIcon, label: 'Jungle Scout', active: userStats.puzzlesSolved >= 1, color: 'bg-emerald-500' },
+              { id: 'hoard', icon: Trophy, label: 'Banana Hoarder', active: userStats.totalBananas >= 100, color: 'bg-yellow-500' },
+              { id: 'survivor', icon: ShieldCheck, label: 'Cave Survivor', active: matches.some(m => m.mode === 'cave' && m.accuracy > 80), color: 'bg-red-500' },
+              { id: 'blitz', icon: Zap, label: 'Speed Demon', active: matches.some(m => m.mode === 'river' && m.score > 2000), color: 'bg-blue-500' },
+            ].map((badge) => (
+              <div 
+                key={badge.id}
+                className={`flex items-center gap-2 px-4 py-2 rounded-2xl border transition-all ${
+                  badge.active 
+                    ? `border-white/20 ${badge.color} text-white shadow-lg` 
+                    : 'border-white/5 bg-white/5 text-white/20'
+                }`}
+                title={badge.active ? `Unlocked: ${badge.label}` : `Locked achievement: ${badge.label}`}
+              >
+                <badge.icon className="size-4" />
+                <span className="text-[10px] font-black uppercase tracking-tight">{badge.label}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* STATS GRID */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="wooden-texture p-6 rounded-3xl shadow-xl flex flex-col items-center text-center group hover:scale-[1.02] transition-transform">
-            <div className="size-12 bg-yellow-500/20 rounded-2xl flex items-center justify-center mb-4 group-hover:rotate-12 transition-transform">
+            <div className="size-12 bg-yellow-500/20 rounded-2xl flex items-center justify-center mb-4 group-hover:rotate-12 transition-transform shadow-sm">
               <img src="/banana.svg" alt="Bananas" className="size-8 drop-shadow-md" />
             </div>
             <p className="text-3xl font-black text-white italic">{userStats.totalBananas}</p>
@@ -159,7 +207,7 @@ export default function ProfilePage() {
           </div>
 
           <div className="wooden-texture-dark p-6 rounded-3xl shadow-xl flex flex-col items-center text-center group hover:scale-[1.02] transition-transform">
-            <div className="size-12 bg-primary/20 rounded-2xl flex items-center justify-center mb-4 group-hover:rotate-12 transition-transform">
+            <div className="size-12 bg-primary/20 rounded-2xl flex items-center justify-center mb-4 group-hover:rotate-12 transition-transform shadow-inner">
               <Flame className="size-8 text-primary" />
             </div>
             <p className="text-3xl font-black text-white italic">{userStats.puzzlesSolved}</p>
@@ -167,7 +215,7 @@ export default function ProfilePage() {
           </div>
 
           <div className="wooden-texture-dark p-6 rounded-3xl shadow-xl flex flex-col items-center text-center group hover:scale-[1.02] transition-transform">
-            <div className="size-12 bg-emerald-500/20 rounded-2xl flex items-center justify-center mb-4 group-hover:rotate-12 transition-transform">
+            <div className="size-12 bg-emerald-500/20 rounded-2xl flex items-center justify-center mb-4 group-hover:rotate-12 transition-transform shadow-inner">
               <Award className="size-8 text-emerald-400" />
             </div>
             <p className="text-3xl font-black text-white italic">#{Math.max(1, 10 - Math.floor(userStats.puzzlesSolved / 10))}</p>
@@ -176,7 +224,7 @@ export default function ProfilePage() {
 
           <div className="wooden-texture-dark p-6 rounded-3xl shadow-xl flex flex-col items-center text-center group hover:scale-[1.02] transition-transform">
             <div className="size-12 bg-blue-500/20 rounded-2xl flex items-center justify-center mb-4 group-hover:rotate-12 transition-transform">
-              <Zap className="size-8 text-blue-400" />
+              <Target className="size-8 text-blue-400" />
             </div>
             <p className="text-3xl font-black text-white italic">Elite</p>
             <p className="text-xs font-bold text-primary uppercase tracking-widest mt-1">Tribe Status</p>
@@ -185,10 +233,13 @@ export default function ProfilePage() {
 
         {/* MATCH HISTORY */}
         <section className="flex-1 flex flex-col">
-          <h3 className="text-2xl font-black text-wood-dark dark:text-white mb-6 flex items-center gap-3 uppercase italic tracking-tighter">
-            <History className="size-7 text-primary" />
-            The Scroll of <span className="text-primary italic">Deeds</span>
-          </h3>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-2xl font-black text-wood-dark dark:text-white flex items-center gap-3 uppercase italic tracking-tighter">
+              <History className="size-7 text-primary" />
+              The Scroll of <span className="text-primary italic">Deeds</span>
+            </h3>
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest hidden sm:block">Last 20 Expedition Records</span>
+          </div>
 
           <div className="space-y-4">
             {loading ? (
@@ -197,40 +248,48 @@ export default function ProfilePage() {
                 <p className="text-primary font-black uppercase italic">Unrolling the parchment...</p>
               </div>
             ) : matches.length === 0 ? (
-              <div className="text-center py-20 bg-white/5 rounded-[40px] border-2 border-dashed border-wood-dark/10">
+              <div className="text-center py-20 bg-white/5 rounded-[40px] border-4 border-dashed border-wood-dark/10">
                 <p className="text-xl font-bold text-slate-500 uppercase italic">No deeds found in your scroll yet.</p>
-                <Link href="/" className="inline-block mt-4 text-primary font-black uppercase hover:underline">Start an Expedition</Link>
+                <Link href="/" className="inline-block mt-4 px-6 py-2 bg-primary text-wood-dark font-black uppercase rounded-xl hover:scale-105 transition-transform">Start an Expedition</Link>
               </div>
             ) : (
               matches.map((match) => (
                 <div 
                   key={match.id} 
-                  className="bg-white/50 dark:bg-slate-900/40 backdrop-blur-md p-5 rounded-3xl border border-wood-dark/10 dark:border-white/5 shadow-lg flex items-center justify-between group hover:bg-white/60 dark:hover:bg-slate-900/60 transition-all animate-fade-in"
+                  className="bg-white/50 dark:bg-slate-900/40 backdrop-blur-md p-5 rounded-3xl border border-wood-dark/10 dark:border-white/5 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4 group hover:bg-white/60 dark:hover:bg-slate-900/60 transition-all animate-fade-in"
                 >
-                  <div className="flex items-center gap-5">
-                    <div className="size-14 wooden-texture rounded-2xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
-                      {match.mode === 'amazon' && <Zap className="size-7 text-yellow-400 fill-yellow-400" />}
-                      {match.mode === 'classic' && <MapIcon className="size-7 text-emerald-400" />}
+                  <div className="flex items-center gap-5 w-full sm:w-auto">
+                    <div className={`size-14 wooden-texture rounded-2xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform ${match.accuracy >= 100 ? 'ring-2 ring-yellow-500/50' : ''}`}>
+                      {match.mode === 'river' && <Zap className="size-7 text-yellow-400 fill-yellow-400" />}
+                      {match.mode === 'temple' && <MapIcon className="size-7 text-emerald-400" />}
                       {match.mode === 'cave' && <Target className="size-7 text-red-400" />}
                       {match.mode === 'canopy' && <Award className="size-7 text-blue-400" />}
+                      {match.mode === 'blitz' && <Flame className="size-7 text-orange-400 fill-orange-400" />}
                     </div>
                     <div>
                       <h4 className="font-black text-wood-dark dark:text-white uppercase tracking-tight text-lg">
-                        {match.mode === 'amazon' && 'Amazon River Run'}
-                        {match.mode === 'classic' && 'Great Totem Quest'}
+                        {match.mode === 'river' && 'Amazon River Run'}
+                        {match.mode === 'temple' && 'Temple of the Golden Peel'}
                         {match.mode === 'cave' && 'Hidden Echo Cave'}
                         {match.mode === 'canopy' && 'Canopy Glider'}
                         {match.mode === 'blitz' && 'Banana Blitz'}
                       </h4>
-                      <p className="text-xs font-bold text-slate-500 uppercase flex items-center gap-2 mt-0.5">
-                        <Clock className="size-3" />
-                        {match.timestamp?.toDate ? match.timestamp.toDate().toLocaleDateString() : 'Recent'}
-                      </p>
+                      <div className="flex items-center gap-3">
+                        <p className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1.5">
+                          <Clock className="size-3" />
+                          {match.timestamp?.toDate ? new Date(match.timestamp.toDate()).toLocaleDateString() : 'Recent Expedition'}
+                        </p>
+                        {match.accuracy !== undefined && (
+                          <p className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${match.accuracy >= 80 ? 'bg-emerald-500/20 text-emerald-500' : 'bg-orange-500/20 text-orange-500'}`}>
+                            {match.accuracy.toFixed(0)}% Accuracy
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-8">
-                    <div className="text-right hidden sm:block">
+                  <div className="flex items-center justify-between sm:justify-end gap-8 w-full sm:w-auto pt-4 sm:pt-0 border-t sm:border-0 border-wood-dark/5">
+                    <div className="text-right">
                       <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Score</p>
                       <p className="text-xl font-black text-wood-dark dark:text-primary italic leading-none">{match.score.toLocaleString()}</p>
                     </div>
@@ -243,7 +302,7 @@ export default function ProfilePage() {
                       </div>
                     </div>
 
-                    <div className="p-2 hover:bg-white/20 transition-colors rounded-xl cursor-help" title={`Accuracy: ${match.accuracy?.toFixed(1)}%`}>
+                    <div className="hidden lg:block p-2 hover:bg-white/20 rounded-xl group-hover:rotate-12 transition-all">
                       <ChevronRight className="size-5 text-slate-400 group-hover:text-primary transition-colors" />
                     </div>
                   </div>
