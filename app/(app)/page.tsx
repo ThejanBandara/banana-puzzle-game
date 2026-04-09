@@ -194,6 +194,7 @@ export default function MissionHub() {
           </div>
 
           <div className="flex items-center gap-4 md:gap-8">
+            {/* Desktop Stats */}
             <div className="hidden md:flex items-center gap-4 bg-wood-dark/5 dark:bg-primary/5 px-4 py-2 rounded-2xl border-2 border-wood-dark/10 dark:border-primary/10">
               <div className="flex items-center gap-2 group cursor-help" title="Puzzles Solved">
                 <Flame className="size-5 text-orange-500 fill-orange-500 animate-pulse" />
@@ -203,6 +204,19 @@ export default function MissionHub() {
               <div className="flex items-center gap-2 group cursor-help" title="Total Bananas">
                 <img src="/banana.svg" alt="Banana" className="size-5 drop-shadow-sm" />
                 <span className="font-black text-sm text-wood-dark dark:text-primary uppercase">{userStats.totalBananas} BANANAS</span>
+              </div>
+            </div>
+
+            {/* Mobile Stats Bar */}
+            <div className="flex md:hidden items-center gap-3 bg-wood-dark/5 dark:bg-primary/5 px-3 py-1.5 rounded-xl border border-wood-dark/10 dark:border-primary/10">
+              <div className="flex items-center gap-1">
+                <Flame className="size-3.5 text-orange-500 fill-orange-500" />
+                <span className="font-black text-[10px] text-wood-dark dark:text-primary uppercase">{userStats.puzzlesSolved}</span>
+              </div>
+              <div className="w-px h-3 bg-wood-dark/10 dark:bg-primary/10"></div>
+              <div className="flex items-center gap-1">
+                <img src="/banana.svg" alt="B" className="size-3.5" />
+                <span className="font-black text-[10px] text-wood-dark dark:text-primary uppercase">{userStats.totalBananas}</span>
               </div>
             </div>
 
@@ -255,10 +269,10 @@ export default function MissionHub() {
         </header>
 
         {/* --- MAIN PAGE LAYOUT --- */}
-        <main className="flex-1 flex flex-col lg:flex-row px-6 py-8 lg:px-20 gap-8">
+        <main className="flex-1 flex flex-col-reverse lg:flex-row px-6 py-8 lg:px-20 gap-8">
 
           <aside className="w-full lg:w-80 flex flex-col gap-6 animate-fade-in-up" style={{ animationDelay: '0.1s', opacity: 0 }}>
-            <nav className="wooden-texture p-4 rounded-3xl shadow-2xl flex flex-col gap-3">
+            <nav className="wooden-texture p-4 rounded-3xl shadow-2xl grid grid-cols-2 lg:flex lg:flex-col gap-3">
               <Link href="#" className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-primary text-wood-dark font-black shadow-[0_4px_0_0_var(--color-shadow-yellow)] transform hover:translate-y-[-2px] transition-all">
                 <MapIcon className="size-6" />
                 <span>MISSIONS</span>
@@ -337,7 +351,7 @@ export default function MissionHub() {
                   // Show cards that are transitioning in/out
                   const isVisible = absOffset <= 2;
 
-                  let xPos = offset * 320; // Default spacing
+                  let xPos = offset * 280; // Adjusted for mobile
                   if (typeof window !== 'undefined' && window.innerWidth >= 768) {
                     xPos = offset * 450;
                   }
@@ -434,7 +448,7 @@ export default function MissionHub() {
 
             {/* Current Mode Info - Title RESTORED below card */}
             <div className="mt-12 text-center px-4 animate-fade-in-up">
-              <h1 className="text-5xl md:text-7xl font-black text-wood-dark dark:text-white mb-4 italic tracking-tighter text-3d uppercase">
+              <h1 className="text-4xl md:text-7xl font-black text-wood-dark dark:text-white mb-4 italic tracking-tighter text-3d uppercase">
                 {GAME_MODES[currentIndex].title}
               </h1>
               <p className="text-slate-400 font-bold mb-8 max-w-xl mx-auto italic text-sm md:text-base">
