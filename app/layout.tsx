@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 };
 
 import { AuthProvider } from "@/context/auth-context";
+import { BackgroundMusic } from "@/components/background-music";
 
 export default function RootLayout({ children, }: Readonly<{ children: React.ReactNode; }>) {
   return (
@@ -27,6 +28,7 @@ export default function RootLayout({ children, }: Readonly<{ children: React.Rea
       >
         <AuthProvider>
           {children}
+          <BackgroundMusic />
         </AuthProvider>
       </body>
     </html>
