@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { 
-  Trophy, 
-  Map as MapIcon, 
-  User, 
-  Flame, 
-  Award, 
-  History, 
+import {
+  Trophy,
+  Map as MapIcon,
+  User,
+  Flame,
+  Award,
+  History,
   ArrowLeft,
   ChevronRight,
   Target,
@@ -20,13 +20,13 @@ import {
 } from "lucide-react";
 import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
-import { 
-  doc, 
-  onSnapshot, 
-  collection, 
-  query, 
-  where, 
-  orderBy, 
+import {
+  doc,
+  onSnapshot,
+  collection,
+  query,
+  where,
+  orderBy,
   limit,
   getCountFromServer
 } from 'firebase/firestore';
@@ -110,70 +110,70 @@ export default function ProfilePage() {
   };
 
   const allBadges = [
-    { 
-      id: 'scout', 
-      icon: MapIcon, 
-      label: 'Jungle Scout', 
+    {
+      id: 'scout',
+      icon: MapIcon,
+      label: 'Jungle Scout',
       description: 'Complete your first puzzle expedition into the unknown.',
-      active: userStats.puzzlesSolved >= 1, 
-      color: 'bg-emerald-500' 
+      active: userStats.puzzlesSolved >= 1,
+      color: 'bg-emerald-500'
     },
-    { 
-      id: 'hoard', 
-      icon: Trophy, 
-      label: 'Banana Hoarder', 
+    {
+      id: 'hoard',
+      icon: Trophy,
+      label: 'Banana Hoarder',
       description: 'A true collector. Gather over 100 precious bananas.',
-      active: userStats.totalBananas >= 100, 
-      color: 'bg-yellow-500' 
+      active: userStats.totalBananas >= 100,
+      color: 'bg-yellow-500'
     },
-    { 
-      id: 'survivor', 
-      icon: ShieldCheck, 
-      label: 'Cave Survivor', 
+    {
+      id: 'survivor',
+      icon: ShieldCheck,
+      label: 'Cave Survivor',
       description: 'Master of shadows. Achieve >80% accuracy in the Echo Cave.',
-      active: matches.some(m => m.mode === 'cave' && m.accuracy > 80), 
-      color: 'bg-red-500' 
+      active: matches.some(m => m.mode === 'cave' && m.accuracy > 80),
+      color: 'bg-red-500'
     },
-    { 
-      id: 'blitz', 
-      icon: Zap, 
-      label: 'Speed Demon', 
+    {
+      id: 'blitz',
+      icon: Zap,
+      label: 'Speed Demon',
       description: 'Fastest hands in the forest. Score >2000 points in River Run.',
-      active: matches.some(m => m.mode === 'river' && m.score > 2000), 
-      color: 'bg-blue-500' 
+      active: matches.some(m => m.mode === 'river' && m.score > 2000),
+      color: 'bg-blue-500'
     },
-    { 
-      id: 'master', 
-      icon: Flame, 
-      label: 'Puzzle Master', 
+    {
+      id: 'master',
+      icon: Flame,
+      label: 'Puzzle Master',
       description: 'Legacy of logic. Solve 50 total puzzles across all modes.',
-      active: userStats.puzzlesSolved >= 50, 
-      color: 'bg-orange-500' 
+      active: userStats.puzzlesSolved >= 50,
+      color: 'bg-orange-500'
     },
-    { 
-      id: 'legend', 
-      icon: Award, 
-      label: 'Tribe Legend', 
+    {
+      id: 'legend',
+      icon: Award,
+      label: 'Tribe Legend',
       description: 'Recognized by the Jungle Elders. Reach level 10 Explorer.',
-      active: explorerLevel >= 10, 
-      color: 'bg-purple-500' 
+      active: explorerLevel >= 10,
+      color: 'bg-purple-500'
     },
   ];
 
-  const StatCard = ({ icon, value, label, description, color, isWooden = false, isText = false }: any) => (
+  const StatCard = ({ icon, value, label, description, color, isWooden = false, isText = false, wideTooltip = false }: any) => (
     <div className={`${isWooden ? 'wooden-texture' : 'wooden-texture-dark'} p-4 rounded-3xl shadow-xl flex flex-col items-center text-center group hover:scale-[1.02] transition-all relative cursor-help`}>
       <div className={`size-10 bg-${color}-500/20 rounded-2xl flex items-center justify-center mb-2 group-hover:rotate-12 transition-transform shadow-sm`}>
         {icon}
       </div>
       <p className={`${isText ? 'text-sm' : 'text-xl'} font-black text-white italic uppercase leading-tight`}>{value}</p>
       <p className="text-[10px] font-bold text-primary uppercase tracking-widest">{label}</p>
-      
+
       {/* Tooltip */}
-      <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-48 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 scale-95 group-hover:scale-100 z-50">
-        <div className="bg-amber-50 dark:bg-slate-800 border-2 border-wood-dark/20 dark:border-white/10 p-3 rounded-2xl shadow-2xl relative">
-          <p className="text-[10px] font-bold text-wood-dark dark:text-amber-200 leading-tight">
+      <div className={`absolute bottom-[calc(100%+12px)] left-1/2 -translate-x-1/2 ${wideTooltip ? 'w-64 px-4' : 'w-48'} opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 scale-95 group-hover:scale-100 z-50`}>
+        <div className="bg-amber-50 dark:bg-slate-800 border-2 border-wood-dark/20 dark:border-white/10 p-4 rounded-3xl shadow-2xl relative">
+          <div className="text-[10px] font-bold text-wood-dark dark:text-amber-200 leading-tight">
             {description}
-          </p>
+          </div>
           {/* Arrow */}
           <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 size-4 bg-amber-50 dark:bg-slate-800 border-r-2 border-b-2 border-wood-dark/20 dark:border-white/10 rotate-45" />
         </div>
@@ -183,7 +183,7 @@ export default function ProfilePage() {
 
   return (
     <div className="bg-background-light dark:bg-background-dark font-display min-h-screen w-full relative overflow-x-hidden flex flex-col text-slate-900 dark:text-slate-100">
-      
+
       {/* 1. LAYERED BACKGROUND */}
       <div className="fixed inset-0 z-0">
         <img
@@ -210,7 +210,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <button 
+        <button
           onClick={logout}
           className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 px-4 py-2 rounded-xl transition-all font-black text-sm uppercase border border-red-500/20"
         >
@@ -220,16 +220,16 @@ export default function ProfilePage() {
       </header>
 
       <main className="relative z-10 flex-1 w-full max-w-6xl mx-auto px-6 py-8 flex flex-col gap-8">
-        
+
 
         {/* IDENTITY SECTION */}
         <section className="flex flex-col md:flex-row gap-8 items-center bg-white/50 dark:bg-slate-900/40 backdrop-blur-xl p-8 rounded-4xl border-2 border-wood-dark/10 dark:border-white/5 shadow-2xl">
           <div className="relative">
             <div className="size-24 rounded-[28px] border-4 border-primary shadow-2xl overflow-hidden rotate-3 transform hover:rotate-0 transition-transform duration-500">
-              <img 
-                src={user?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid}`} 
-                alt="Avatar" 
-                className="w-full h-full object-cover scale-110" 
+              <img
+                src={user?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid}`}
+                alt="Avatar"
+                className="w-full h-full object-cover scale-110"
               />
             </div>
             <div className="absolute -bottom-2 -right-2 bg-yellow-500 text-wood-dark size-8 rounded-xl flex items-center justify-center font-black text-sm border-4 border-white dark:border-slate-900 shadow-xl">
@@ -245,9 +245,9 @@ export default function ProfilePage() {
               </span>
             </div>
             <p className="text-primary/70 font-bold uppercase tracking-widest text-[10px] mb-4">{user?.email}</p>
-            
+
             <div className="w-full max-w-md bg-wood-dark/10 dark:bg-white/5 h-3 rounded-full overflow-hidden border border-wood-dark/5 dark:border-white/5 relative">
-              <div 
+              <div
                 className="h-full bg-linear-to-r from-primary to-emerald-400 transition-all duration-1000 shadow-[0_0_20px_rgba(34,197,94,0.4)]"
                 style={{ width: `${Math.max(2, progressToNext)}%` }}
               />
@@ -258,9 +258,9 @@ export default function ProfilePage() {
           </div>
         </section>
 
-        {/* STATS GRID (NOW AT TOP) */}
+
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard 
+          <StatCard
             icon={<img src="/banana.svg" alt="Bananas" className="size-6 drop-shadow-md" />}
             value={userStats.totalBananas}
             label="Life Bananas"
@@ -268,27 +268,70 @@ export default function ProfilePage() {
             color="yellow"
             isWooden
           />
-          <StatCard 
+          <StatCard
             icon={<Flame className="size-6 text-primary" />}
             value={userStats.puzzlesSolved}
             label="Puzzles Solved"
             description="The number of ancient trials you have successfully overcome."
             color="primary"
           />
-          <StatCard 
+          <StatCard
             icon={<Award className="size-6 text-emerald-400" />}
             value={globalRank ? `#${globalRank}` : (userStats.puzzlesSolved > 0 ? "..." : "N/A")}
             label="Guild Standing"
             description="Your official rank among all explorers in the world."
             color="emerald"
           />
-          <StatCard 
+          <StatCard
             icon={<Target className="size-6 text-blue-400" />}
             value={getExplorerTitle(explorerLevel)}
             label="Status"
-            description="The rank of honor bestowed upon you by the Jungle Council."
+            description={
+              <div className="space-y-2 pt-1 min-w-[200px]">
+                <p className="mb-3 pb-1.5 border-b border-wood-dark/10 dark:border-white/10 opacity-70 flex items-center gap-2 uppercase tracking-widest text-[9px]">
+                  <ShieldCheck className="size-3 text-primary shrink-0" />
+                  Guild Ranking Progress
+                </p>
+                <div className={`flex justify-between items-center gap-4 px-3 py-2 rounded-2xl transition-all ${explorerLevel >= 20 ? "bg-primary/20 border-2 border-primary/30 shadow-sm" : "opacity-40"}`}>
+                  <div className="flex items-center gap-2.5">
+                    <Trophy className={`size-4 shrink-0 ${explorerLevel >= 20 ? "text-yellow-500" : ""}`} />
+                    <span className={explorerLevel >= 20 ? "text-primary font-black" : "font-bold text-slate-500 dark:text-slate-400"}>Ancient Legend</span>
+                  </div>
+                  <span className="text-[8px] font-black italic opacity-60">Lvl 20+</span>
+                </div>
+                <div className={`flex justify-between items-center gap-4 px-3 py-2 rounded-2xl transition-all ${explorerLevel >= 15 && explorerLevel < 20 ? "bg-primary/20 border-2 border-primary/30 shadow-sm" : "opacity-40"}`}>
+                  <div className="flex items-center gap-2.5">
+                    <Zap className={`size-4 shrink-0 ${explorerLevel >= 15 && explorerLevel < 20 ? "text-primary" : ""}`} />
+                    <span className={explorerLevel >= 15 && explorerLevel < 20 ? "text-primary font-black" : "font-bold text-slate-500 dark:text-slate-400"}>Great Strategist</span>
+                  </div>
+                  <span className="text-[8px] font-black italic opacity-60">Lvl 15+</span>
+                </div>
+                <div className={`flex justify-between items-center gap-4 px-3 py-2 rounded-2xl transition-all ${explorerLevel >= 10 && explorerLevel < 15 ? "bg-primary/20 border-2 border-primary/30 shadow-sm" : "opacity-40"}`}>
+                  <div className="flex items-center gap-2.5">
+                    <ShieldCheck className={`size-4 shrink-0 ${explorerLevel >= 10 && explorerLevel < 15 ? "text-emerald-400" : ""}`} />
+                    <span className={explorerLevel >= 10 && explorerLevel < 15 ? "text-primary font-black" : "font-bold text-slate-500 dark:text-slate-400"}>Forest Guardian</span>
+                  </div>
+                  <span className="text-[8px] font-black italic opacity-60">Lvl 10+</span>
+                </div>
+                <div className={`flex justify-between items-center gap-4 px-3 py-2 rounded-2xl transition-all ${explorerLevel >= 5 && explorerLevel < 10 ? "bg-primary/20 border-2 border-primary/30 shadow-sm" : "opacity-40"}`}>
+                  <div className="flex items-center gap-2.5">
+                    <MapIcon className={`size-4 shrink-0 ${explorerLevel >= 5 && explorerLevel < 10 ? "text-blue-400" : ""}`} />
+                    <span className={explorerLevel >= 5 && explorerLevel < 10 ? "text-primary font-black" : "font-bold text-slate-500 dark:text-slate-400"}>Jade Pathseeker</span>
+                  </div>
+                  <span className="text-[8px] font-black italic opacity-60">Lvl 5+</span>
+                </div>
+                <div className={`flex justify-between items-center gap-4 px-3 py-2 rounded-2xl transition-all ${explorerLevel < 5 ? "bg-primary/20 border-2 border-primary/30 shadow-sm" : "opacity-40"}`}>
+                  <div className="flex items-center gap-2.5">
+                    <User className={`size-4 shrink-0 ${explorerLevel < 5 ? "text-amber-600" : ""}`} />
+                    <span className={explorerLevel < 5 ? "text-primary font-black" : "font-bold text-slate-500 dark:text-slate-400"}>Jungle Scout</span>
+                  </div>
+                  <span className="text-[8px] font-black italic opacity-60">Lvl 1+</span>
+                </div>
+              </div>
+            }
             color="blue"
             isText
+            wideTooltip
           />
         </section>
 
@@ -296,22 +339,20 @@ export default function ProfilePage() {
         <section className="flex justify-center p-1.5 bg-wood-dark/5 dark:bg-white/5 backdrop-blur-md rounded-[32px] border border-wood-dark/10 dark:border-white/10 max-w-md mx-auto w-full">
           <button
             onClick={() => setActiveTab('history')}
-            className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-[24px] font-black uppercase text-xs tracking-widest transition-all ${
-              activeTab === 'history'
+            className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-[24px] font-black uppercase text-xs tracking-widest transition-all ${activeTab === 'history'
                 ? 'wooden-texture text-white shadow-xl scale-105'
                 : 'text-slate-500 hover:text-leaf-dark hover:bg-white/10 dark:hover:bg-slate-900/50'
-            }`}
+              }`}
           >
             <History className="size-4" />
             Scroll of Deeds
           </button>
           <button
             onClick={() => setActiveTab('badges')}
-            className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-[24px] font-black uppercase text-xs tracking-widest transition-all ${
-              activeTab === 'badges'
+            className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-[24px] font-black uppercase text-xs tracking-widest transition-all ${activeTab === 'badges'
                 ? 'wooden-texture text-white shadow-xl scale-105'
                 : 'text-slate-500 hover:text-leaf-dark hover:bg-white/10 dark:hover:bg-slate-900/50'
-            }`}
+              }`}
           >
             <LayoutGrid className="size-4" />
             Explorer Badges
@@ -341,12 +382,12 @@ export default function ProfilePage() {
               </div>
             ) : (
               matches.map((match) => (
-                <div 
-                  key={match.id} 
+                <div
+                  key={match.id}
                   className="bg-[#fdf6e3] dark:bg-[#1a1410] p-6 rounded-4xl border-2 border-[#e3d0a5] dark:border-[#3d2b1f] shadow-[4px_4px_0px_rgba(74,55,40,0.1)] dark:shadow-[4px_4px_0px_rgba(0,0,0,0.5)] flex flex-col sm:flex-row items-center justify-between gap-4 group hover:scale-[1.01] transition-all relative overflow-hidden"
                 >
                   <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/papyurus-dark.png')]" />
-                  
+
                   <div className="flex items-center gap-5 w-full sm:w-auto relative z-10">
                     <div className={`size-14 wooden-texture rounded-2xl flex items-center justify-center shadow-inner group-hover:rotate-6 transition-transform ${match.accuracy >= 100 ? 'ring-2 ring-yellow-500/50' : ''}`}>
                       {match.mode === 'river' && <Zap className="size-7 text-yellow-400 fill-yellow-400" />}
@@ -382,7 +423,7 @@ export default function ProfilePage() {
                       <p className="text-[10px] font-black text-[#8b7355] uppercase tracking-widest mb-1">Score</p>
                       <p className="text-xl font-black text-[#4a3728] dark:text-primary italic leading-none">{match.score.toLocaleString()}</p>
                     </div>
-                    
+
                     <div className="text-right">
                       <p className="text-[10px] font-black text-[#8b7355] uppercase tracking-widest mb-1">Earned</p>
                       <div className="flex items-center justify-end gap-1.5">
@@ -406,62 +447,57 @@ export default function ProfilePage() {
             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest italic">{allBadges.filter(b => b.active).length} Unlocked</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {allBadges.map((badge) => (
-              <div 
+              <div
                 key={badge.id}
-                className={`relative p-8 rounded-5xl border-4 transition-all duration-500 group overflow-hidden ${
-                  badge.active 
-                    ? 'bg-stone-800 dark:bg-stone-900 border-stone-600 shadow-[inset_0_4px_10px_rgba(0,0,0,0.8),0_10px_20px_rgba(0,0,0,0.4)]' 
-                    : 'bg-stone-900/50 border-stone-800 grayscale opacity-40 shadow-none'
-                }`}
+                className={`relative p-6 rounded-4xl border-2 transition-all duration-300 group overflow-hidden bg-rose-950/10 ${badge.active
+                    ? 'wooden-texture-dark border-[#4a3728] dark:border-[#3d2b1f] shadow-xl hover:scale-[1.05]'
+                    : 'bg-slate-900/60 dark:bg-stone-900/50 border-stone-800/30 grayscale opacity-80 shadow-none'
+                  }`}
               >
-                <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/dark-stone.png')]" />
-
+                {/* Inner Content */}
                 <div className="relative z-10 flex flex-col items-center text-center">
-                  <div className={`size-20 rounded-[2rem] flex items-center justify-center mb-6 transition-all duration-700 shadow-2xl ${
-                    badge.active 
-                      ? `${badge.color} text-white ring-4 ring-white/10 group-hover:scale-110 group-hover:rotate-6` 
-                      : 'bg-stone-800 text-stone-600 shadow-none'
-                  }`}>
-                    <badge.icon className={`size-10 ${badge.active ? 'drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]' : ''}`} />
+                  <div className={`size-16 rounded-3xl flex items-center justify-center mb-4 transition-all duration-500 group-hover:rotate-12 ${badge.active
+                      ? `${badge.color} shadow-xl shadow-${badge.color.split('-')[1]}-500/30 ring-4 ring-white/10`
+                      : 'bg-slate-800/50 border border-white/5'
+                    }`}>
+                    <badge.icon className={`size-8 ${badge.active ? 'text-white' : 'text-slate-600'}`} />
                   </div>
-                  
-                  <h4 className={`text-xl font-black uppercase tracking-tight mb-2 ${badge.active ? 'text-stone-100' : 'text-stone-600'}`}>
+
+                  <h4 className={`font-black text-lg mb-1 italic uppercase tracking-tight ${badge.active ? 'text-white' : 'text-slate-500'
+                    }`}>
                     {badge.label}
                   </h4>
-                  <p className={`text-xs font-bold leading-relaxed italic ${badge.active ? 'text-stone-400' : 'text-stone-700'}`}>
+
+                  <p className={`text-[10px] leading-tight font-bold px-2 ${badge.active ? 'text-amber-100/60' : 'text-slate-600'
+                    }`}>
                     {badge.description}
                   </p>
-                  
-                  {!badge.active && (
-                    <div className="mt-6 px-4 py-1.5 bg-stone-950/50 rounded-full border border-stone-800">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-stone-700 italic">Seal Locked</span>
-                    </div>
-                  )}
 
-                  {badge.active && (
-                    <div className="mt-6 flex items-center gap-2 text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.3)] animate-pulse">
-                      <ShieldCheck className="size-4" />
-                      <span className="text-[10px] font-black uppercase tracking-widest">Seal Earned</span>
+                  {!badge.active ? (
+                    <div className="mt-4 px-3 py-1 bg-black/20 rounded-full border border-white/5 flex items-center justify-center">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-slate-600 italic leading-none">Locked</span>
                     </div>
+                  ) : (
+                    <>
+                      <div className="mt-4 px-3 py-1 bg-green-500/20 rounded-full border border-white/5 flex items-center justify-center">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-green-600 italic leading-none">Unlocked</span>
+                      </div>
+                    </>
                   )}
                 </div>
 
+                {/* Gloss Effect for active badges */}
                 {badge.active && (
-                  <div className={`absolute -bottom-10 -right-10 size-40 blur-[80px] opacity-20 pointer-events-none rounded-full ${badge.color}`} />
+                  <div className="absolute top-0 -left-full w-full h-full bg-linear-to-r from-transparent via-green-500/30 to-transparent skew-x-[-25deg] group-hover:animate-shine pointer-events-none" >
+                  </div>
                 )}
               </div>
             ))}
           </div>
         </section>
       </main>
-
-      <footer className="relative z-10 w-full px-6 py-10 text-center">
-        <p className="text-[10px] font-black text-wood-dark/30 dark:text-white/10 uppercase tracking-[0.4em]">
-          Banana Puzzle Game &copy; 2026 Explorer Guild
-        </p>
-      </footer>
     </div>
   );
 }

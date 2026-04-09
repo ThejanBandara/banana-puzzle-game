@@ -241,12 +241,6 @@ export default function LeaderboardPage() {
         )}
       </main>
 
-      {/* FOOTER */}
-      <footer className="relative z-10 w-full px-6 py-12 text-center border-t border-wood-dark/5 dark:border-white/5 backdrop-blur-md">
-        <p className="text-[10px] font-black text-wood-dark/30 dark:text-white/10 uppercase tracking-[0.4em]">
-          Sacred Ledger Updated in Real-Time by the Guild
-        </p>
-      </footer>
     </div>
   );
 }
