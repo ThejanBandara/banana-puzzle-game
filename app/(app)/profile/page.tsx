@@ -27,7 +27,8 @@ import {
   query, 
   where, 
   orderBy, 
-  limit 
+  limit,
+  getCountFromServer
 } from 'firebase/firestore';
 import JungleParticles from "@/components/jungle-particles";
 
@@ -36,6 +37,7 @@ export default function ProfilePage() {
   const [userStats, setUserStats] = useState({ totalBananas: 0, puzzlesSolved: 0 });
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [globalRank, setGlobalRank] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<'history' | 'badges'>('history');
 
   useEffect(() => {
@@ -75,6 +77,26 @@ export default function ProfilePage() {
       unsubMatches();
     };
   }, [user]);
+
+  // 3. Calculate Global Rank
+  useEffect(() => {
+    if (!user || userStats.puzzlesSolved === 0) return;
+
+    const calculateRank = async () => {
+      try {
+        const q = query(
+          collection(db, "users"),
+          where("stats.puzzlesSolved", ">", userStats.puzzlesSolved)
+        );
+        const snapshot = await getCountFromServer(q);
+        setGlobalRank(snapshot.data().count + 1);
+      } catch (err) {
+        console.error("Error calculating rank:", err);
+      }
+    };
+
+    calculateRank();
+  }, [user, userStats.puzzlesSolved]);
 
   const explorerLevel = Math.floor(userStats.puzzlesSolved / 5) + 1;
   const progressToNext = (userStats.puzzlesSolved % 5) * 20;
@@ -138,6 +160,27 @@ export default function ProfilePage() {
     },
   ];
 
+  const StatCard = ({ icon, value, label, description, color, isWooden = false, isText = false }: any) => (
+    <div className={`${isWooden ? 'wooden-texture' : 'wooden-texture-dark'} p-4 rounded-3xl shadow-xl flex flex-col items-center text-center group hover:scale-[1.02] transition-all relative cursor-help`}>
+      <div className={`size-10 bg-${color}-500/20 rounded-2xl flex items-center justify-center mb-2 group-hover:rotate-12 transition-transform shadow-sm`}>
+        {icon}
+      </div>
+      <p className={`${isText ? 'text-sm' : 'text-xl'} font-black text-white italic uppercase leading-tight`}>{value}</p>
+      <p className="text-[10px] font-bold text-primary uppercase tracking-widest">{label}</p>
+      
+      {/* Tooltip */}
+      <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-48 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 scale-95 group-hover:scale-100 z-50">
+        <div className="bg-amber-50 dark:bg-slate-800 border-2 border-wood-dark/20 dark:border-white/10 p-3 rounded-2xl shadow-2xl relative">
+          <p className="text-[10px] font-bold text-wood-dark dark:text-amber-200 leading-tight">
+            {description}
+          </p>
+          {/* Arrow */}
+          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 size-4 bg-amber-50 dark:bg-slate-800 border-r-2 border-b-2 border-wood-dark/20 dark:border-white/10 rotate-45" />
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="bg-background-light dark:bg-background-dark font-display min-h-screen w-full relative overflow-x-hidden flex flex-col text-slate-900 dark:text-slate-100">
       
@@ -180,7 +223,7 @@ export default function ProfilePage() {
         
 
         {/* IDENTITY SECTION */}
-        <section className="flex flex-col md:flex-row gap-8 items-center bg-white/50 dark:bg-slate-900/40 backdrop-blur-xl p-8 rounded-[40px] border-2 border-wood-dark/10 dark:border-white/5 shadow-2xl">
+        <section className="flex flex-col md:flex-row gap-8 items-center bg-white/50 dark:bg-slate-900/40 backdrop-blur-xl p-8 rounded-4xl border-2 border-wood-dark/10 dark:border-white/5 shadow-2xl">
           <div className="relative">
             <div className="size-24 rounded-[28px] border-4 border-primary shadow-2xl overflow-hidden rotate-3 transform hover:rotate-0 transition-transform duration-500">
               <img 
@@ -203,51 +246,50 @@ export default function ProfilePage() {
             </div>
             <p className="text-primary/70 font-bold uppercase tracking-widest text-[10px] mb-4">{user?.email}</p>
             
-            <div className="w-full max-w-md bg-wood-dark/10 dark:bg-white/5 h-3 rounded-full overflow-hidden border border-wood-dark/5 dark:border-white/5">
+            <div className="w-full max-w-md bg-wood-dark/10 dark:bg-white/5 h-3 rounded-full overflow-hidden border border-wood-dark/5 dark:border-white/5 relative">
               <div 
                 className="h-full bg-linear-to-r from-primary to-emerald-400 transition-all duration-1000 shadow-[0_0_20px_rgba(34,197,94,0.4)]"
-                style={{ width: `${progressToNext}%` }}
+                style={{ width: `${Math.max(2, progressToNext)}%` }}
               />
             </div>
+            <p className="text-[8px] font-bold text-leaf-dark uppercase tracking-widest mt-2">
+              Exp: {userStats.puzzlesSolved % 5} / 5 puzzles to Level {explorerLevel + 1}
+            </p>
           </div>
         </section>
+
         {/* STATS GRID (NOW AT TOP) */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="wooden-texture p-4 rounded-3xl shadow-xl flex flex-col items-center text-center group hover:scale-[1.02] transition-transform">
-            <div className="size-10 bg-yellow-500/20 rounded-2xl flex items-center justify-center mb-2 group-hover:rotate-12 transition-transform shadow-sm">
-              <img src="/banana.svg" alt="Bananas" className="size-6 drop-shadow-md" />
-            </div>
-            <p className="text-xl font-black text-white italic">{userStats.totalBananas}</p>
-            <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Life Bananas</p>
-          </div>
-
-          <div className="wooden-texture-dark p-4 rounded-3xl shadow-xl flex flex-col items-center text-center group hover:scale-[1.02] transition-transform">
-            <div className="size-10 bg-primary/20 rounded-2xl flex items-center justify-center mb-2 group-hover:rotate-12 transition-transform">
-              <Flame className="size-6 text-primary" />
-            </div>
-            <p className="text-xl font-black text-white italic">{userStats.puzzlesSolved}</p>
-            <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Puzzles Solved</p>
-          </div>
-
-          <div className="wooden-texture-dark p-4 rounded-3xl shadow-xl flex flex-col items-center text-center group hover:scale-[1.02] transition-transform">
-            <div className="size-10 bg-emerald-500/20 rounded-2xl flex items-center justify-center mb-2 group-hover:rotate-12 transition-transform">
-              <Award className="size-6 text-emerald-400" />
-            </div>
-            <p className="text-xl font-black text-white italic">
-              #{Math.max(1, 100 - (userStats.puzzlesSolved * 2) - Math.floor(userStats.totalBananas / 50))}
-            </p>
-            <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Guild Standing</p>
-          </div>
-
-          <div className="wooden-texture-dark p-4 rounded-3xl shadow-xl flex flex-col items-center text-center group hover:scale-[1.02] transition-transform">
-            <div className="size-10 bg-blue-500/20 rounded-2xl flex items-center justify-center mb-2 group-hover:rotate-12 transition-transform">
-              <Target className="size-6 text-blue-400" />
-            </div>
-            <p className="text-sm font-black text-white uppercase italic leading-tight">
-              {getExplorerTitle(explorerLevel)}
-            </p>
-            <p className="text-[10px] font-bold text-primary uppercase tracking-widest mt-1">Status</p>
-          </div>
+          <StatCard 
+            icon={<img src="/banana.svg" alt="Bananas" className="size-6 drop-shadow-md" />}
+            value={userStats.totalBananas}
+            label="Life Bananas"
+            description="Your total wealth gathered across all expeditions."
+            color="yellow"
+            isWooden
+          />
+          <StatCard 
+            icon={<Flame className="size-6 text-primary" />}
+            value={userStats.puzzlesSolved}
+            label="Puzzles Solved"
+            description="The number of ancient trials you have successfully overcome."
+            color="primary"
+          />
+          <StatCard 
+            icon={<Award className="size-6 text-emerald-400" />}
+            value={globalRank ? `#${globalRank}` : (userStats.puzzlesSolved > 0 ? "..." : "N/A")}
+            label="Guild Standing"
+            description="Your official rank among all explorers in the world."
+            color="emerald"
+          />
+          <StatCard 
+            icon={<Target className="size-6 text-blue-400" />}
+            value={getExplorerTitle(explorerLevel)}
+            label="Status"
+            description="The rank of honor bestowed upon you by the Jungle Council."
+            color="blue"
+            isText
+          />
         </section>
 
         {/* TABS NAVIGATION */}
@@ -301,7 +343,7 @@ export default function ProfilePage() {
               matches.map((match) => (
                 <div 
                   key={match.id} 
-                  className="bg-[#fdf6e3] dark:bg-[#1a1410] p-6 rounded-[2rem] border-2 border-[#e3d0a5] dark:border-[#3d2b1f] shadow-[4px_4px_0px_rgba(74,55,40,0.1)] dark:shadow-[4px_4px_0px_rgba(0,0,0,0.5)] flex flex-col sm:flex-row items-center justify-between gap-4 group hover:scale-[1.01] transition-all relative overflow-hidden"
+                  className="bg-[#fdf6e3] dark:bg-[#1a1410] p-6 rounded-4xl border-2 border-[#e3d0a5] dark:border-[#3d2b1f] shadow-[4px_4px_0px_rgba(74,55,40,0.1)] dark:shadow-[4px_4px_0px_rgba(0,0,0,0.5)] flex flex-col sm:flex-row items-center justify-between gap-4 group hover:scale-[1.01] transition-all relative overflow-hidden"
                 >
                   <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/papyurus-dark.png')]" />
                   
@@ -368,7 +410,7 @@ export default function ProfilePage() {
             {allBadges.map((badge) => (
               <div 
                 key={badge.id}
-                className={`relative p-8 rounded-[2.5rem] border-4 transition-all duration-500 group overflow-hidden ${
+                className={`relative p-8 rounded-5xl border-4 transition-all duration-500 group overflow-hidden ${
                   badge.active 
                     ? 'bg-stone-800 dark:bg-stone-900 border-stone-600 shadow-[inset_0_4px_10px_rgba(0,0,0,0.8),0_10px_20px_rgba(0,0,0,0.4)]' 
                     : 'bg-stone-900/50 border-stone-800 grayscale opacity-40 shadow-none'
