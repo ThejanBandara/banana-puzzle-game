@@ -122,7 +122,13 @@ export default function LeaderboardPage() {
                 return (
                   <div 
                     key={player.id} 
-                    className={`flex flex-col items-center transition-all duration-700 animate-fade-in-up ${isGold ? 'order-2 z-20 scale-110 mb-8' : isSilver ? 'order-1 z-10 opacity-90' : 'order-3 z-10 opacity-80'}`}
+                    className={`flex flex-col items-center transition-all duration-700 animate-fade-in-up ${
+                      isGold 
+                        ? 'md:order-2 order-1 z-20 scale-110 mb-8 md:mb-8' 
+                        : isSilver 
+                          ? 'md:order-1 order-2 z-10 opacity-90 mb-4 md:mb-0' 
+                          : 'md:order-3 order-3 z-10 opacity-80'
+                    }`}
                   >
                     <div className="relative mb-4">
                       <div className={`size-24 md:size-32 rounded-[2rem] border-4 overflow-hidden shadow-2xl transition-transform hover:scale-110 ${isGold ? 'border-yellow-400 rotate-0' : isSilver ? 'border-slate-300 -rotate-3' : 'border-amber-600 rotate-3'}`}>
@@ -140,8 +146,8 @@ export default function LeaderboardPage() {
                       </div>
                     </div>
 
-                    <div className="text-center z-10">
-                      <h3 className={`font-black uppercase tracking-tight truncate max-w-[150px] ${isGold ? 'text-2xl text-yellow-500' : 'text-lg text-slate-200'}`}>
+                    <div className="text-center z-10 w-full px-2">
+                      <h3 className={`font-black uppercase tracking-tight truncate w-full ${isGold ? 'text-2xl text-yellow-500' : 'text-lg text-slate-200'}`}>
                         {player.name}
                       </h3>
                       <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] opacity-70 mb-2">
@@ -161,7 +167,9 @@ export default function LeaderboardPage() {
                     </div>
 
                     {/* Pedestal Component */}
-                    <div className={`mt-6 w-52 wooden-texture rounded-t-[2.5rem] shadow-[inset_0_4px_10px_rgba(0,0,0,0.5)] border-x-4 border-t-8 border-wood-dark relative ${isGold ? 'h-40' : isSilver ? 'h-32' : 'h-24'}`}>
+                    <div className={`mt-6 w-52 wooden-texture rounded-t-[2.5rem] shadow-[inset_0_4px_10px_rgba(0,0,0,0.5)] border-x-4 border-t-8 border-wood-dark relative ${
+                      isGold ? 'h-24 md:h-40' : isSilver ? 'h-20 md:h-32' : 'h-16 md:h-24'
+                    }`}>
                       <div className="absolute inset-0 bg-linear-to-b from-white/10 to-transparent pointer-events-none rounded-t-[2.5rem]"></div>
                       <div className="absolute top-4 left-1/2 -translate-x-1/2 font-black text-wood-dark/20 text-4xl italic">
                         {isGold ? 'I' : isSilver ? 'II' : 'III'}

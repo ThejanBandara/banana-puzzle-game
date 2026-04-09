@@ -9,7 +9,8 @@ import {
   ChevronRight,
   Heart,
   Timer,
-  Loader2
+  Loader2,
+  History
 } from 'lucide-react';
 import { db, auth } from '@/lib/firebase';
 import { 
@@ -206,64 +207,60 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
       <div className="relative w-full max-w-5xl h-full max-h-[900px] flex flex-col gap-6 animate-fade-in-up">
         
         {/* HEADER */}
-        <div className="flex items-center justify-between bg-wood-dark/40 backdrop-blur-md p-4 md:p-6 rounded-4xl border-2 border-white/10 shadow-2xl">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between bg-wood-dark/40 backdrop-blur-md p-3 md:p-6 rounded-3xl md:rounded-4xl border-2 border-white/10 shadow-2xl gap-3">
+          <div className="flex items-center gap-3 md:gap-4 w-full sm:w-auto">
             <button 
               onClick={onClose}
-              className="bg-white/5 hover:bg-white/10 p-3 rounded-xl transition-all border border-white/10 group"
+              className="bg-white/5 hover:bg-white/10 p-2 md:p-3 rounded-xl transition-all border border-white/10 group"
             >
-              <X className="size-6 text-white group-hover:rotate-90 transition-transform" />
+              <X className="size-5 md:size-6 text-white group-hover:rotate-90 transition-transform" />
             </button>
-            <div>
-              <h2 className="text-xl md:text-2xl font-black text-white italic tracking-tighter uppercase leading-none">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-base md:text-2xl font-black text-white italic tracking-tighter uppercase leading-none truncate">
                 {mode.title}
               </h2>
-              <p className="text-[10px] md:text-xs font-bold text-primary tracking-[0.2em] uppercase mt-1">
-                {isSpeedMode ? 'Adrenaline Speed Mode' : isHardcoreMode ? 'Survival Hardcore Mode' : isZenMode ? 'Relaxed Zen Mode' : 'Classic Progression Mode'}
+              <p className="text-[8px] md:text-xs font-bold text-primary tracking-[0.2em] uppercase mt-1">
+                {isSpeedMode ? 'Speed' : isHardcoreMode ? 'Hardcore' : isZenMode ? 'Zen' : 'Classic'}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4 md:gap-8">
+          <div className="flex items-center justify-end gap-3 md:gap-8 w-full sm:w-auto">
             {isHardcoreMode && (
-              <div className="flex items-center gap-1.5 bg-red-500/10 px-3 py-1.5 rounded-full border border-red-500/20">
+              <div className="flex items-center gap-1 bg-red-500/10 px-2 py-1 rounded-full border border-red-500/20">
                 {[...Array(3)].map((_, i) => (
                   <Heart 
                     key={i} 
-                    className={`size-5 transition-all duration-500 ${i < lives ? 'text-red-500 fill-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]' : 'text-white/10'}`} 
+                    className={`size-4 md:size-5 transition-all duration-500 ${i < lives ? 'text-red-500 fill-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]' : 'text-white/10'}`} 
                   />
                 ))}
               </div>
             )}
 
-            <div className="flex flex-col items-end">
-              <div className="flex items-center gap-2">
-                <Flame className={`size-5 ${streak > 0 ? 'text-orange-500 fill-orange-500 animate-bounce' : 'text-white/20'}`} />
-                <span className="text-xl font-black text-white">{streak}</span>
+            <div className="flex flex-col items-center">
+              <div className="flex items-center gap-1.5 md:gap-2">
+                <Flame className={`size-4 md:size-5 ${streak > 0 ? 'text-orange-500 fill-orange-500 animate-bounce' : 'text-white/20'}`} />
+                <span className="text-lg md:text-xl font-black text-white">{streak}</span>
               </div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Streak</p>
             </div>
             
-            <div className="h-10 w-0.5 bg-white/10"></div>
+            <div className="h-6 md:h-10 w-px md:w-0.5 bg-white/10"></div>
             
-            <div className="flex flex-col items-end min-w-[100px]">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col items-end">
+              <div className="flex items-center gap-1.5 md:gap-2">
                 {isSpeedMode || isZenMode ? (
                   <>
-                    {isSpeedMode && <Timer className={`size-5 ${timeLeft < 10 ? 'text-red-500 animate-pulse' : 'text-primary'}`} />}
-                    <span className={`text-2xl font-black ${isSpeedMode && timeLeft < 10 ? 'text-red-500 underline' : 'text-white'}`}>
+                    {isSpeedMode && <Timer className={`size-4 md:size-5 ${timeLeft < 10 ? 'text-red-500 animate-pulse' : 'text-primary'}`} />}
+                    <span className={`text-xl md:text-2xl font-black ${isSpeedMode && timeLeft < 10 ? 'text-red-500 underline' : 'text-white'}`}>
                       {isSpeedMode ? `${timeLeft}s` : currentCount}
                     </span>
                   </>
                 ) : (
-                  <span className="text-xl font-black text-white">
+                  <span className="text-lg md:text-xl font-black text-white">
                     {currentCount}<span className="text-primary/40">/{TOTAL_PUZZLES}</span>
                   </span>
                 )}
               </div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
-                {isSpeedMode ? 'Time Left' : isZenMode ? 'Puzzles Solved' : 'Mission Progress'}
-              </p>
             </div>
           </div>
         </div>
@@ -272,7 +269,7 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
         <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0">
           
           {/* PUZZLE DISPLAY */}
-          <div className="flex-1 wooden-texture p-4 md:p-8 rounded-[3rem] shadow-[0_40px_80px_rgba(0,0,0,0.5)] border-t-12 border-b-12 border-wood-dark relative overflow-hidden flex items-center justify-center">
+          <div className="flex-1 wooden-texture p-2 md:p-8 rounded-3xl md:rounded-[3rem] shadow-[0_40px_80px_rgba(0,0,0,0.5)] border-t-4 md:border-t-12 border-b-4 md:border-b-12 border-wood-dark relative overflow-hidden flex items-center justify-center min-h-[250px]">
             <div className="absolute inset-0 bg-linear-to-br from-white/10 to-transparent pointer-events-none"></div>
             
             {isFinished ? (
@@ -306,27 +303,28 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <button 
-                    onClick={onClose}
-                    className="w-full sm:w-auto px-12 py-5 bg-primary text-wood-dark font-black rounded-3xl shadow-[0_8px_0_0_#caaf2e] hover:translate-y-[-2px] active:translate-y-[2px] active:shadow-none transition-all text-xl italic tracking-tighter"
-                  >
-                    BACK TO HUB
-                  </button>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <button 
                     onClick={() => {
-                        setIsFinished(false);
-                        setCurrentCount(1);
-                        setCorrectCount(0);
-                        setBananasEarned(0);
-                        setStreak(0);
-                        if (isSpeedMode) setTimeLeft(60);
-                        if (isHardcoreMode) setLives(3);
-                        fetchPuzzle();
+                      setIsFinished(false);
+                      setCurrentCount(1);
+                      setCorrectCount(0);
+                      setBananasEarned(0);
+                      setStreak(0);
+                      if (isSpeedMode) setTimeLeft(60);
+                      if (isHardcoreMode) setLives(3);
+                      fetchPuzzle();
                     }}
-                    className="w-full sm:w-auto px-12 py-5 bg-white/10 hover:bg-white/20 text-white font-black rounded-3xl border-2 border-white/10 transition-all text-xl italic tracking-tighter"
+                    className="px-8 py-4 bg-primary text-wood-dark font-black rounded-2xl hover:scale-105 transition-all shadow-[0_8px_0_0_#9a7d0a] active:translate-y-1 active:shadow-none uppercase italic tracking-tighter flex items-center justify-center gap-2"
                   >
-                    PLAY AGAIN
+                    <History className="size-5" />
+                    Play Again
+                  </button>
+                  <button 
+                    onClick={onClose}
+                    className="px-8 py-4 bg-white/10 text-white font-black rounded-2xl hover:bg-white/20 transition-all border-2 border-white/10 uppercase italic tracking-tighter"
+                  >
+                    Exit Hub
                   </button>
                 </div>
               </div>
@@ -350,7 +348,7 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
                 <img 
                   src={puzzle?.question} 
                   alt="Banana Puzzle" 
-                  className="max-w-full max-h-[400px] md:max-h-[500px] rounded-2xl shadow-2xl border-4 border-white/10 transition-all duration-700"
+                  className="w-full h-full max-h-[400px] md:max-h-[500px] rounded-xl md:rounded-2xl shadow-2xl border-2 md:border-4 border-white/10 transition-all duration-700 object-contain"
                 />
                 
                 {feedback === 'correct' && (
@@ -377,14 +375,14 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
           {/* INPUT AREA */}
           <div className="w-full lg:w-96 flex flex-col gap-6">
             
-            {/* INSTRUCTIONS */}
-            <div className="bg-white/5 backdrop-blur-md p-6 rounded-3xl border-2 border-white/5">
-              <h3 className="font-black text-white uppercase italic tracking-tighter mb-2 flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">lightbulb</span>
+            {/* INSTRUCTIONS - Hidden on mobile to save space */}
+            <div className="hidden md:block bg-white/5 backdrop-blur-md p-4 md:p-6 rounded-3xl border-2 border-white/5">
+              <h3 className="font-black text-white uppercase italic tracking-tighter mb-1 flex items-center gap-2 text-sm md:text-base">
+                <span className="material-symbols-outlined text-primary text-sm md:text-base">lightbulb</span>
                 Solver's Task
               </h3>
-              <p className="text-slate-400 text-sm font-bold leading-relaxed">
-                Find the missing number in the logic sequence. Every correct answer grants you <span className="text-primary italic">5 Bananas</span> and fuels your streak.
+              <p className="text-slate-400 text-[10px] md:text-sm font-bold leading-tight md:leading-relaxed">
+                Find the missing number. Correct answers grant <span className="text-primary italic">Bananas</span>.
               </p>
             </div>
 
@@ -396,7 +394,7 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
                   disabled={loading || !!feedback}
                   onClick={() => handleAnswer(num)}
                   className={`
-                    relative h-16 md:h-20 wooden-texture rounded-2xl md:rounded-3xl border-b-4 border-wood-dark 
+                    relative h-14 md:h-20 wooden-texture rounded-2xl md:rounded-3xl border-b-4 border-wood-dark 
                     flex items-center justify-center group transition-all
                     ${loading || !!feedback ? 'opacity-50 cursor-not-allowed' : 'hover:translate-y-[-4px] active:translate-y-[2px] active:border-b-0'}
                   `}
@@ -458,3 +456,4 @@ export default function GamePlay({ mode, onClose }: GamePlayProps) {
     </div>
   );
 }
+
