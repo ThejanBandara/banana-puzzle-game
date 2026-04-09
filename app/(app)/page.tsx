@@ -13,7 +13,8 @@ import {
   Wifi,
   ShieldCheck,
   Map as MapIcon,
-  ChevronLeft
+  ChevronLeft,
+  User
 } from "lucide-react";
 import GamePlay from '@/components/game-play';
 import { useAuth } from '@/context/auth-context';
@@ -217,9 +218,9 @@ export default function MissionHub() {
                 <MapIcon className="size-6" />
                 <span>MISSIONS</span>
               </Link>
-              <Link href="#" className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold transition-all border border-white/5">
-                <Users className="size-6" />
-                <span>TRIBE</span>
+              <Link href="/profile" className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold transition-all border border-white/5">
+                <User className="size-6" />
+                <span>MY PROFILE</span>
               </Link>
               <Link href="#" className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold transition-all border border-white/5">
                 <ShoppingCart className="size-6" />
