@@ -14,12 +14,14 @@ import {
   ShieldCheck,
   Map as MapIcon,
   ChevronLeft,
-  User
+  User,
+  ChevronDown
 } from "lucide-react";
 import GamePlay from '@/components/game-play';
 import { useAuth } from '@/context/auth-context';
 import { LogOut, Loader2 } from 'lucide-react';
-import { db } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
+import { useRouter } from 'next/navigation';
 import { 
   collection, 
   query, 
@@ -75,6 +77,7 @@ const GAME_MODES = [
 
 export default function MissionHub() {
   const { user, logout } = useAuth();
+  const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [playingMode, setPlayingMode] = useState<typeof GAME_MODES[0] | null>(null);
   
@@ -82,6 +85,7 @@ export default function MissionHub() {
   const [userStats, setUserStats] = useState({ totalBananas: 0, puzzlesSolved: 0 });
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [loadingStats, setLoadingStats] = useState(true);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -131,6 +135,18 @@ export default function MissionHub() {
 
   const prevMode = () => {
     setCurrentIndex((prev) => (prev - 1 + GAME_MODES.length) % GAME_MODES.length);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      setShowUserMenu(false);
+      await logout();
+      router.push('/login');
+    } catch (err) {
+      console.error("Sign out failed:", err);
+      // Fallback
+      window.location.href = '/login';
+    }
   };
 
   return (
@@ -195,15 +211,44 @@ export default function MissionHub() {
                 <p className="text-sm font-black text-wood-dark dark:text-white uppercase tracking-tight">{user?.displayName || "Golden Gorilla"}</p>
                 <p className="text-xs font-bold text-leaf-dark dark:text-primary/70">Level {Math.floor(userStats.puzzlesSolved / 5) + 1} Explorer</p>
               </div>
-              <div className="size-12 rounded-2xl border-4 border-wood-dark shadow-xl overflow-hidden bg-primary rotate-3 transform hover:rotate-0 transition-transform duration-300 cursor-pointer group relative">
-                <img src={user?.photoURL || "https://images.unsplash.com/photo-1540573133985-87bd1709da65?auto=format&fit=crop&q=80&w=100"} alt="Avatar" className="w-full h-full object-cover" />
+              <div className="relative group/avatar">
                 <button 
-                  onClick={logout}
-                  className="absolute inset-0 bg-red-600/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                  title="Sign Out"
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center gap-2 size-12 rounded-2xl border-4 border-wood-dark shadow-xl overflow-hidden bg-primary rotate-3 transform hover:rotate-0 transition-all duration-300 cursor-pointer active:scale-95"
                 >
-                  <LogOut className="text-white size-6" />
+                  <img src={user?.photoURL || "https://images.unsplash.com/photo-1540573133985-87bd1709da65?auto=format&fit=crop&q=80&w=100"} alt="Avatar" className="w-full h-full object-cover" />
                 </button>
+
+                {/* DROPDOWN MENU */}
+                {showUserMenu && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-40" 
+                      onClick={() => setShowUserMenu(false)}
+                    />
+                    <div className="absolute right-0 mt-4 w-48 wooden-texture-dark rounded-3xl border-4 border-wood-dark shadow-[8px_8px_0px_rgba(0,0,0,0.3)] z-50 animate-fade-in-up overflow-hidden">
+                      <div className="p-2 space-y-1">
+                        <Link 
+                          href="/profile" 
+                          className="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-white/10 text-white font-black text-sm uppercase transition-colors group/item"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <User className="size-4 text-primary group-hover/item:scale-110 transition-transform" />
+                          <span>My Profile</span>
+                        </Link>
+                        <div className="h-px bg-white/10 mx-2" />
+                        <button 
+                          type="button"
+                          onClick={handleSignOut}
+                          className="w-full relative z-[60] flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-red-500/20 text-red-400 font-black text-sm uppercase transition-colors group/item cursor-pointer pointer-events-auto"
+                        >
+                          <LogOut className="size-4 group-hover/item:translate-x-1 transition-transform" />
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -222,9 +267,9 @@ export default function MissionHub() {
                 <User className="size-6" />
                 <span>MY PROFILE</span>
               </Link>
-              <Link href="#" className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold transition-all border border-white/5">
-                <ShoppingCart className="size-6" />
-                <span>BANANA SHOP</span>
+              <Link href="/leaderboard" className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold transition-all border border-white/5 group">
+                <Trophy className="size-6 text-yellow-500 group-hover:scale-110 group-hover:rotate-12 transition-transform" />
+                <span>LEADERBOARD</span>
               </Link>
               <Link href="#" className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold transition-all border border-white/5">
                 <Settings className="size-6" />
@@ -409,21 +454,12 @@ export default function MissionHub() {
           </div>
         </main>
 
-        <footer className="flex flex-col md:flex-row items-center justify-between px-6 py-8 lg:px-20 border-t-2 border-wood-dark/10 dark:border-white/5 bg-background-light/40 dark:bg-background-dark/40 backdrop-blur-md animate-fade-in-up" style={{ animationDelay: '0.3s', opacity: 0 }}>
-          <div className="flex items-center gap-8 mb-4 md:mb-0">
-            <div className="flex items-center gap-3">
-              <div className="size-3 rounded-full bg-leaf-dark shadow-[0_0_10px_#166534] animate-pulse"></div>
-              
-            </div>
-            <div className="flex items-center gap-3 text-slate-500/60 font-bold uppercase tracking-widest text-[10px]">
-              <Wifi className="size-3" />
-            </div>
-          </div>
+        <footer className="flex flex-col md:flex-row items-center justify-center px-6 py-8 lg:px-20 border-t-2 border-wood-dark/10 dark:border-white/5 bg-background-light/40 dark:bg-background-dark/40 backdrop-blur-md animate-fade-in-up" style={{ animationDelay: '0.3s', opacity: 0 }}>
+          
 
-          <div className="flex items-center gap-8 text-[10px] font-black uppercase tracking-widest text-slate-400">
-            <Link className="hover:text-primary transition-colors hover:underline decoration-primary decoration-2 underline-offset-4" href="#">Privacy Jungle</Link>
-            <Link className="hover:text-primary transition-colors hover:underline decoration-primary decoration-2 underline-offset-4" href="#">Tribe Rules</Link>
-            <span className="text-slate-500/30">© 2024 Banana Puzzle</span>
+          <div className="flex items-center text-[10px] gap-2 font-black uppercase tracking-widest text-slate-400">
+           <span className="text-slate-500/30">©2026 Banana Puzzle | Developed by </span>
+           <a href="https://thejanbandara.com/" className='text-slate-500/60'> Thejan Bandara</a>
           </div>
         </footer>
       </div>
