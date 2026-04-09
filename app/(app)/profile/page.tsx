@@ -165,8 +165,8 @@ export default function ProfilePage() {
       <div className={`size-10 bg-${color}-500/20 rounded-2xl flex items-center justify-center mb-2 group-hover:rotate-12 transition-transform shadow-sm`}>
         {icon}
       </div>
-      <p className={`${isText ? 'text-sm' : 'text-xl'} font-black text-white italic uppercase leading-tight`}>{value}</p>
-      <p className="text-[10px] font-bold text-primary uppercase tracking-widest">{label}</p>
+      <p className={`${isText ? 'text-sm' : 'text-xl'} font-black text-white italic uppercase leading-tight drop-shadow-md`}>{value}</p>
+      <p className={`text-[10px] font-bold uppercase tracking-widest ${isWooden ? 'text-yellow-200' : 'text-primary'}`}>{label}</p>
 
       {/* Tooltip */}
       <div className={`absolute bottom-[calc(100%+12px)] left-1/2 -translate-x-1/2 ${wideTooltip ? 'w-64 px-4' : 'w-48'} opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 scale-95 group-hover:scale-100 z-50`}>
@@ -223,7 +223,7 @@ export default function ProfilePage() {
 
 
         {/* IDENTITY SECTION */}
-        <section className="flex flex-col md:flex-row gap-8 items-center bg-white/50 dark:bg-slate-900/40 backdrop-blur-xl p-8 rounded-4xl border-2 border-wood-dark/10 dark:border-white/5 shadow-2xl">
+        <section className="flex flex-col md:flex-row gap-8 items-center bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl p-8 rounded-4xl border-2 border-wood-dark/20 dark:border-white/10 shadow-2xl">
           <div className="relative">
             <div className="size-24 rounded-[28px] border-4 border-primary shadow-2xl overflow-hidden rotate-3 transform hover:rotate-0 transition-transform duration-500">
               <img
@@ -240,11 +240,11 @@ export default function ProfilePage() {
           <div className="flex-1 text-center md:text-left">
             <div className="flex flex-wrap items-center gap-3 justify-center md:justify-start mb-1">
               <h2 className="text-3xl font-black text-wood-dark dark:text-white uppercase tracking-tighter">{user?.displayName || "Golden Gorilla"}</h2>
-              <span className="bg-primary/20 text-primary px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border border-primary/20">
+              <span className="bg-primary/20 text-wood-dark dark:text-primary px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border border-primary/20">
                 Lvl {explorerLevel} {getExplorerTitle(explorerLevel)}
               </span>
             </div>
-            <p className="text-primary/70 font-bold uppercase tracking-widest text-[10px] mb-4">{user?.email}</p>
+            <p className="text-leaf-dark dark:text-primary/70 font-black uppercase tracking-widest text-[10px] mb-4">{user?.email}</p>
 
             <div className="w-full max-w-md bg-wood-dark/10 dark:bg-white/5 h-3 rounded-full overflow-hidden border border-wood-dark/5 dark:border-white/5 relative">
               <div
@@ -252,8 +252,8 @@ export default function ProfilePage() {
                 style={{ width: `${Math.max(2, progressToNext)}%` }}
               />
             </div>
-            <p className="text-[8px] font-bold text-leaf-dark uppercase tracking-widest mt-2">
-              Exp: {userStats.puzzlesSolved % 5} / 5 puzzles to Level {explorerLevel + 1}
+            <p className="text-[10px] font-black text-wood-dark dark:text-leaf-dark uppercase tracking-widest mt-2">
+              Exp: <span className="text-primary dark:text-primary">{userStats.puzzlesSolved % 5}</span> / 5 puzzles to Level {explorerLevel + 1}
             </p>
           </div>
         </section>

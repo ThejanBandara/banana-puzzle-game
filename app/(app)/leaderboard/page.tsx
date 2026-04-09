@@ -109,7 +109,7 @@ export default function LeaderboardPage() {
         ) : (
           <>
             {/* PODIUM SECTION */}
-            <section className="flex flex-col md:flex-row items-end justify-center gap-6 pt-10 min-h-[400px]">
+            <section className="flex flex-wrap md:flex-nowrap items-end justify-center gap-4 md:gap-6 pt-6 md:pt-10 min-h-0 md:min-h-[400px]">
               {winners.length > 0 && podiumOrder.map((idx) => {
                 const player = winners[idx];
                 if (!player) return null;
@@ -124,10 +124,10 @@ export default function LeaderboardPage() {
                     key={player.id} 
                     className={`flex flex-col items-center transition-all duration-700 animate-fade-in-up ${
                       isGold 
-                        ? 'md:order-2 order-1 z-20 scale-110 mb-8 md:mb-8' 
+                        ? 'w-full md:w-auto md:order-2 order-1 z-20 scale-105 md:scale-110 mb-6 md:mb-8' 
                         : isSilver 
-                          ? 'md:order-1 order-2 z-10 opacity-90 mb-4 md:mb-0' 
-                          : 'md:order-3 order-3 z-10 opacity-80'
+                          ? 'w-[calc(50%-8px)] md:w-auto md:order-1 order-2 z-10 opacity-95' 
+                          : 'w-[calc(50%-8px)] md:w-auto md:order-3 order-3 z-10 opacity-90'
                     }`}
                   >
                     <div className="relative mb-4">
@@ -135,10 +135,10 @@ export default function LeaderboardPage() {
                         <img src={player.photoURL} alt={player.name} className="w-full h-full object-cover" />
                       </div>
                       
-                      <div className={`absolute -top-6 left-1/2 -translate-x-1/2 drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] ${isGold ? 'scale-125' : ''}`}>
-                        {isGold && <Crown className="size-12 text-yellow-400 fill-yellow-400 stroke-wood-dark" />}
-                        {isSilver && <Trophy className="size-10 text-slate-300 fill-slate-300 stroke-wood-dark" />}
-                        {isBronze && <Medal className="size-10 text-amber-600 fill-amber-600 stroke-wood-dark" />}
+                      <div className={`absolute -top-4 md:-top-6 left-1/2 -translate-x-1/2 drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] ${isGold ? 'scale-110 md:scale-125' : 'scale-90 md:scale-100'}`}>
+                        {isGold && <Crown className="size-10 md:size-12 text-yellow-400 fill-yellow-400 stroke-wood-dark" />}
+                        {isSilver && <Trophy className="size-8 md:size-10 text-slate-300 fill-slate-300 stroke-wood-dark" />}
+                        {isBronze && <Medal className="size-8 md:size-10 text-amber-600 fill-amber-600 stroke-wood-dark" />}
                       </div>
 
                       <div className={`absolute -bottom-2 -right-2 size-10 rounded-xl flex items-center justify-center font-black border-2 border-white dark:border-slate-950 shadow-lg ${isGold ? 'bg-yellow-400 text-wood-dark text-lg' : isSilver ? 'bg-slate-300 text-slate-700' : 'bg-amber-600 text-amber-100'}`}>
@@ -147,7 +147,7 @@ export default function LeaderboardPage() {
                     </div>
 
                     <div className="text-center z-10 w-full px-2">
-                      <h3 className={`font-black uppercase tracking-tight truncate w-full ${isGold ? 'text-2xl text-yellow-500' : 'text-lg text-slate-200'}`}>
+                      <h3 className={`font-black uppercase tracking-tight truncate w-full drop-shadow-md ${isGold ? 'text-2xl text-yellow-500' : 'text-lg text-white dark:text-slate-200'}`}>
                         {player.name}
                       </h3>
                       <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] opacity-70 mb-2">
@@ -166,9 +166,9 @@ export default function LeaderboardPage() {
                       </div>
                     </div>
 
-                    {/* Pedestal Component */}
-                    <div className={`mt-6 w-52 wooden-texture rounded-t-[2.5rem] shadow-[inset_0_4px_10px_rgba(0,0,0,0.5)] border-x-4 border-t-8 border-wood-dark relative ${
-                      isGold ? 'h-24 md:h-40' : isSilver ? 'h-20 md:h-32' : 'h-16 md:h-24'
+                    {/* Pedestal Component - Hidden on mobile to save space */}
+                    <div className={`mt-6 w-52 wooden-texture rounded-t-[2.5rem] shadow-[inset_0_4px_10px_rgba(0,0,0,0.5)] border-x-4 border-t-8 border-wood-dark relative hidden md:block ${
+                      isGold ? 'h-40' : isSilver ? 'h-32' : 'h-24'
                     }`}>
                       <div className="absolute inset-0 bg-linear-to-b from-white/10 to-transparent pointer-events-none rounded-t-[2.5rem]"></div>
                       <div className="absolute top-4 left-1/2 -translate-x-1/2 font-black text-wood-dark/20 text-4xl italic">
